@@ -275,26 +275,26 @@ wellname <- function(i,j=NULL) {
 }
 
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
-leakygenes<-function(data, emptywells){
+leakygenes<-function(data, emptywells) {
   empty<-data[emptywells] # subset data to the wells specified as empty
   names(empty)<-sapply(emptywells, wellname)
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
   genes.empty<-apply(rmspike(empty),2,function(x) sum(x>=1)) # remove ERCC reads
   spike.empty<-colSums(keepspike(empty)) # keep only ERCC reads
   genespike<-data.frame(genes=genes.empty,ERCC=spike.empty)
-  if(length(which(genes.empty > mean(genes/5))) != 0){
-    warning(paste("Not all empty samples are empty in", names[[i]],", continuing anyway"))
-  } else {# check if the empty wells were actually empty, otherwise stop
-        # plot genes/cell and ERCC reads/cell for empty wells
-    par(mar = c(5, 4, 6, 1))
-    barplot(t(genespike),main="total genes and ERCCs \n in empty wells",
+  n <- sum(genes.empty > median(genes)/5)
+  if(n>0)
+    warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", names[[i]], n, length(emptywells)))
+  ## plot genes/cell and ERCC reads/cell for empty wells
+  par(mar = c(5, 4, 6, 1))
+  barplot(t(genespike),main="total genes and ERCCs \n in empty wells",
           col=c("blue","red"),space=rep(c(0.7,0),8),cex.names = 0.8,las=3,beside=TRUE,
           legend=colnames(genespike),args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
-    }
+  
   # determine top expressed genes in empty and compare to mean expressed genes in plate
-  if( length(which(spike.empty > 75)) == 0){
-    stop(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
-  }  
+  if( ! any(spike.empty > 75))
+    warning(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
+
   emptyz<-empty[which(spike.empty>75)]  # take only wells which worked (>75 ERCC reads)
   emptyz<-rmspike(emptyz) # remove ERCCs
   mean.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
