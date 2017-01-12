@@ -302,11 +302,14 @@ leakygenes<-function(data, emptywells) {
   top.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
   names(top.empty)<-sapply(names(top.empty),chop_chr) # remove __chr* from name
   names(top.all)<-sapply(names(top.all),chop_chr) # remove __chr* from name
-  overlap<-top.empty[names(top.empty) %in% names(top.all)] # check overal between top 50 empty and 200 in plate
-  non.overlap<-top.empty[!names(top.empty) %in% names(top.all)]
-  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 overlapping genes",sub="barcode leaking in %", xlab="log2(sum of reads in empty)",horiz=TRUE)
-  text(0.5,b, round((top.empty[names(overlap)[1:10]]/top.all[names(overlap)[1:10]])*100,2))
+  o <- names(top.empty) %in% names(top.all)
+  overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
+  non.overlap<-top.empty[ !o ]
+  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
+             sub="leakage to empty in %", xlab="log2(sum of reads in empty)",horiz=TRUE)
+  text(0.5,b, round((top.empty[names(overlap)[1:10] ]/top.all[names(overlap)[1:10] ])*100,2))
   if (length(overlap)==50)
     warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
-  barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
+  barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
+          main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
 }                                       #leakygenes
