@@ -9,14 +9,25 @@
 ## questions can be addressed to m.muraro@hubrecht.eu
 
 ####install/load packages and variables####
-# install.packages("oce") # install this package upon first use
-source("~/AvO_lab/R/scripts/plate_diagnostics_functions2.R") # specify path to functions file
+source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
 require(RColorBrewer)
 require(oce)
 
 # specify the location of your empty wells (follows primer number order)
 # if you don't have empty wells just specify O21-O24 and P21-P24.  
-emptywells<-c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
+bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
+rightmost.col <- seq(24,384, by=24)
+emptywells <- rightmost.col
+
+## path to files with .cout* extention. NB: ALL files in the dir will be processed
+inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/mauro-pancreas/empty-wells/results"
+inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/actinomycin/1F/results/"
+inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/actinomycin/2F/results/"
+inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/2016_10_03/HL_thanasis/HL1/results/"
+inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/2016_10_03/HL_thanasis/HL2/results/"
+
+## where to leave the output:
+outputdir <- inputdir
 
 #variables for the script
 names<-list() # for the shortened names of the libraries
@@ -35,7 +46,9 @@ bc<-list() # list of .coutb files
 
 ####read files and lable cells ####
 #read data into four lists
-files <- read_files(dir = getwd()) # path to files with .cout* extention. NB: ALL files in the dir will be processed
+
+setwd(inputdir)
+files <- read_files(dir = getwd())
 
 # read in files
 split_files <-sub(".*\\/","",files) 
@@ -55,12 +68,12 @@ for(i in 1:length(tc)){ colnames(tc[[i]])<-paste(names[[i]],c(1:384),sep="_") }
 # OPTIONAL: rename part of a specified plate if you have different experiments in one plate
 # do this only for one of the .coutt files at the time by choosing the correct location in the .coutt list (eg:tc[[5]])
 # and manually specify the names of the experiments (eg:"alpha"/"beta") and the cell labels (eg: 1:192), in total should be 384 cells.
-names(tc[[5]])<-c(paste("alpha",c(1:192),sep="_"),paste("beta",c(1:192),sep="_")) 
+if(FALSE)
+  names(tc[[5]])<-c(paste("alpha",c(1:192),sep="_"),paste("beta",c(1:192),sep="_")) 
 
 #### diagnostic plots####
-path<-"/Users/mauro/Desktop/diagnostic plots/" # specify where you want the diagnostic plots
-dir.create(path, showWarnings = F) # directory will be made if it doesn't exist
-setwd(path)
+dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn't exist
+setwd(outputdir)
 for(i in 1:length(tc)){
   pdf(paste(names[[i]],"_plate_diagnostics",".pdf",sep=""))
   par(mfrow = c(3,3)) # specify grid for plots on the pdf 
