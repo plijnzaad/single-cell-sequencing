@@ -262,41 +262,53 @@ read_files <- function(dir = "", name = Sys.Date()){
   return(output)
 }
 
-# check expression in empty corner of plate and calculate "leakyness" from highly expressed genes
-leakygenes<-function(data){
-  corner<-data[emptywells] # subset data to 8 wells specified in diagnotics script as empty corner
-  names(corner)<-c("O21","O22","O23","O24","P21","P22","P23","P24")
+wellname <- function(i,j=NULL) {
+    ## returns name of well given its index (or coordinates)
+    rows <- LETTERS[1:16]
+    cols <- 1:24
+    m <- matrix(kronecker(X=rows, Y=as.character(cols), FUN=paste0),byrow=TRUE,
+                nrow=length(rows),ncol=length(cols), dimnames=list(rows,cols))
+    if(is.null(j))
+      t(m)[i]
+    else
+      m[row,col]
+}
+
+## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
+leakygenes<-function(data, emptywells){
+  empty<-data[emptywells] # subset data to the wells specified as empty
+  names(empty)<-sapply(emptywells, wellname)
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
-  genes.corner<-apply(rmspike(corner),2,function(x) sum(x>=1)) # remove ERCC reads
-  spike.corner<-colSums(keepspike(corner)) # keep only ERCC reads
-  genespike<-data.frame(genes=genes.corner,ERCC=spike.corner)
-  if(length(which(genes.corner > mean(genes/5))) != 0){
-    stop(paste("Not all 8 corner samples are empty in", names[[i]],": won't be plotted"))
-  } else {# check if the corner wells were actually empty, otherwise stop
-        # plot genes/cell and ERCC reads/cell for corner wells
+  genes.empty<-apply(rmspike(empty),2,function(x) sum(x>=1)) # remove ERCC reads
+  spike.empty<-colSums(keepspike(empty)) # keep only ERCC reads
+  genespike<-data.frame(genes=genes.empty,ERCC=spike.empty)
+  if(length(which(genes.empty > mean(genes/5))) != 0){
+    warning(paste("Not all empty samples are empty in", names[[i]],", continuing anyway"))
+  } else {# check if the empty wells were actually empty, otherwise stop
+        # plot genes/cell and ERCC reads/cell for empty wells
     par(mar = c(5, 4, 6, 1))
-    barplot(t(genespike),main="total genes and ERCCs \n in empty corner",
+    barplot(t(genespike),main="total genes and ERCCs \n in empty wells",
           col=c("blue","red"),space=rep(c(0.7,0),8),cex.names = 0.8,las=3,beside=TRUE,
           legend=colnames(genespike),args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
     }
-  # determine top expressed genes in corner and compare to mean expressed genes in plate
-  if( length(which(spike.corner > 75)) == 0){
+  # determine top expressed genes in empty and compare to mean expressed genes in plate
+  if( length(which(spike.empty > 75)) == 0){
     stop(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
   }  
-  cornerz<-corner[which(spike.corner>75)]  # take only wells which worked (>75 ERCC reads)
-  cornerz<-rmspike(cornerz) # remove ERCCs
-  mean.corner<-apply(cornerz,1,sum)[order(apply(cornerz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in corner
+  emptyz<-empty[which(spike.empty>75)]  # take only wells which worked (>75 ERCC reads)
+  emptyz<-rmspike(emptyz) # remove ERCCs
+  mean.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
   mean.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
-  names(mean.corner)<-sapply(names(mean.corner),chop_chr) # remove __chr* from name
+  names(mean.empty)<-sapply(names(mean.empty),chop_chr) # remove __chr* from name
   names(mean.all)<-sapply(names(mean.all),chop_chr) # remove __chr* from name
-  overlap<-mean.corner[names(mean.corner) %in% names(mean.all)] # check overal between top 50 corner and 200 in plate
-  non.overlap<-mean.corner[!names(mean.corner) %in% names(mean.all)]
-  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 overlapping genes",sub="barcode leaking in %", xlab="log2(sum of reads in corner)",horiz=TRUE)
-  text(0.5,b, round((mean.corner[names(overlap)[1:10]]/mean.all[names(overlap)[1:10]])*100,2))
+  overlap<-mean.empty[names(mean.empty) %in% names(mean.all)] # check overal between top 50 empty and 200 in plate
+  non.overlap<-mean.empty[!names(mean.empty) %in% names(mean.all)]
+  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 overlapping genes",sub="barcode leaking in %", xlab="log2(sum of reads in empty)",horiz=TRUE)
+  text(0.5,b, round((mean.empty[names(overlap)[1:10]]/mean.all[names(overlap)[1:10]])*100,2))
   if (length(overlap)==50){
-    warning(paste("there is complete overlap between corner genes and plate genes in ", names[[i]]))
+    warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
   }
   else{
-    barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty corner genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
+    barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
   }
 }
