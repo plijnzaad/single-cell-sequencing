@@ -97,12 +97,14 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
   if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
     a<-hist(log10(colSums(data)),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
-    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=0.8)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1))],labels=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))])
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
-    
-    abline(v=log10(mean(colSums(data))/2),col="red")
-    text(log10(mean(colSums(data))/2),max(a$counts)-2, round(mean(colSums(data))/2), srt=0.2, col = "red",pos=2)
+
+    mn <- mean(colSums(data))
+    md <- median(colSums(data))
+    mtext(paste("mean:",round(mn)," median:",md),side=3,col="red",cex=0.6)
+    abline(v=log10(mn/2),col="red")  ## @@@ why div by 2 ? 
+    text(log10(mn/2),max(a$counts)-2, round(mn/2), srt=0.2, col = "red",pos=2)
   }
   if(plotmethod == "barplot"){
     b<-barplot(colSums(data),xaxt="n",xlab="cells",sub=paste("mean total read:",round(mean(colSums(data)))),main="total unique reads",col="black",border=NA) 
