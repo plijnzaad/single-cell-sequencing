@@ -94,6 +94,7 @@ overseq2 <- function(x,y){
 
 #plot total number of reads per sample
 totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo")){
+  cex <- 0.5
   if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
     a<-hist(log10(colSums(data)),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
@@ -102,7 +103,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
 
     mn <- mean(colSums(data))
     md <- median(colSums(data))
-    mtext(paste("mean:",round(mn)," median:",md),side=3,col="red",cex=0.6)
+    mtext(paste("mean:",round(mn)," median:",md),side=3,col="red",cex=0.5)
     abline(v=log10(mn/2),col="red")  ## @@@ why div by 2 ? 
     text(log10(mn/2),max(a$counts)-2, round(mn/2), srt=0.2, col = "red",pos=2)
   }
@@ -112,19 +113,19 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
     abline(h=mean(colSums(data)),col="red")
   }
   if(plotmethod == "cumulative"){
-    plot(ecdf(colSums(data)),xlab="total reads",ylab="fraction",main="total unique reads",col="red",tck=1,pch=19,cex=0.5,cex.axis=0.8) 
+    plot(ecdf(colSums(data)),xlab="total reads",ylab="fraction",main="total unique reads",col="red",tck=1,pch=19,cex=cex,cex.axis=0.8) 
     abline(v=mean(colSums(data)/2),col="red")
-    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=0.8)
+    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=cex)
   }
   
   if(plotmethod == "combo"){
     a<-hist(log10(colSums(data)),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
-    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=0.8)
+    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))],labels=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))])
     abline(v=log10(mean(colSums(data))/2),col="red")
     text(log10(mean(colSums(data))/2),max(a$counts)-2, round(mean(colSums(data))/2), srt=0.2, col = "red",pos=2)
     plotInset(log10(1),max(a$counts)/4,log10(250), max(a$counts),mar=c(1,1,1,1),
-              plot(ecdf(colSums(data)),pch=".",col="red",cex=0.5,ylab=NA,xlab=NA,main=NA,cex.axis=0.8,xaxt="n",las=3,mgp=c(2,0.1,0),tck=1,bty="n"),
+              plot(ecdf(colSums(data)),pch=".",col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.8,xaxt="n",las=3,mgp=c(2,0.1,0),tck=1,bty="n"),
               debug = getOption("oceDebug"))
   }
 }
@@ -132,23 +133,24 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
 
 #plot amount of genes detected per cell
 cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")){
+  cex <- 0.5
   if ( ! plotmethod %in% c("hist","cumulative","combo") ) stop("invalid plotting method")
     genes<-apply(data,2,function(x) sum(x>=1))
   if(plotmethod == "hist"){
     a<-hist(genes,breaks=100,xlab="total genes",ylab="frequency",main="detected genes/cell",col="steelblue1",xaxt="n") 
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=0.8)
+    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
   }
   if(plotmethod == "cumulative"){
     plot(ecdf(genes),pch=19,col="red",cex=0.5,ylab="frequency",xlab="detected genes/cell",main="cumulative dist genes",cex.axis=1,las=1,tck=1)
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=0.8)
+    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
   }
   if(plotmethod == "combo"){
     a<-hist(genes,breaks=100,xlab="log10(counts)",ylab="frequency",main="detected genes/cell",col="steelblue1",xaxt="n") 
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=0.8)
+    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
     plotInset(max(genes)/3,max(a$counts)/3,max(genes), max(a$counts),mar=c(1,1,1,1),
-              plot(ecdf(colSums(data)),pch=19,col="red",cex=0.5,ylab=NA,xlab=NA,main=NA,cex.axis=0.6,las=3),
+              plot(ecdf(colSums(data)),pch=19,col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.6,las=3),
               debug = getOption("oceDebug"))
   }
 }
@@ -186,6 +188,7 @@ testcutoff<-function(data,n,pdf=FALSE){
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
 plate.plots<-function(data){
+  cex <- 0.5
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
   spike<-colSums(keepspike(data))+0.1
   # calculate sum of spike in per cell
@@ -193,16 +196,16 @@ plate.plots<-function(data){
   palette <- colorRampPalette(rev(brewer.pal(n = 11,name = "RdYlBu")))(10) # pick which palette for plate plotting
   coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
   plot(expand.grid(x = c(1:24), y = c(1:16)),main="Unique non ERCC reads",ylab=NA,xlab=NA) #plate layout
-  mtext(paste(">1500 unique reads :",round(length(which(colSums(data)>1500))/384*100),"%"),col="red",cex=0.9)
+  mtext(paste(">1500 unique reads :",round(length(which(colSums(data)>1500))/384*100),"%"),col="red",cex=cex)
   points(coordinates,pch=19,col=palette[cut(log10(total),10)]) # plot total non-ERCC reads/cell over layout
 
   plot(expand.grid(x = c(1:24), y = c(1:16)),main="sum of all ERCCs",ylab=NA,xlab=NA) #plate layout
   points(coordinates,pch=19,col=palette[cut(log10(spike),10)]) #plot sum of spike ins over plate
-  mtext(paste(">100 ERCCs :",round(length(which(colSums(keepspike(data))>100))/384*100),"%"),col="red",cex=0.9)
+  mtext(paste(">100 ERCCs :",round(length(which(colSums(keepspike(data))>100))/384*100),"%"),col="red",cex=cex)
   
   plot(expand.grid(x = c(1:24), y = c(1:16)),main="sum ERCC/sum non ERCC reads",ylab=NA,xlab=NA) 
   points(coordinates,pch=19,col=palette[cut(spike/total,10)]) #plot ERCC reads/non-ERCC reads/cell
-  mtext(paste(">10% spike in reads:",round(length(which(spike/total>0.05))/384*100),"%"),col="red",cex=0.9)
+  mtext(paste(">10% spike in reads:",round(length(which(spike/total>0.05))/384*100),"%"),col="red",cex=cex)
   
 }
 
@@ -290,7 +293,7 @@ leakygenes<-function(data, emptywells) {
   ## plot genes/cell and ERCC reads/cell for empty wells
   par(mar = c(5, 4, 6, 1))
   barplot(t(empties),main="total genes and ERCCs \n in empty wells",
-          col=c("blue","red"),space=rep(c(5/nrow(empties),0),nrow(empties)),cex.names = 0.8,las=3,beside=TRUE,
+          col=c("blue","red"),space=rep(c(5/nrow(empties),0),nrow(empties)),cex.names = 0.5,las=3,beside=TRUE,
           legend=colnames(empties),
           args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
   
