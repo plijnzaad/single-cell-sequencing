@@ -293,10 +293,10 @@ leakygenes<-function(data, emptywells) {
           args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
   
   # determine top expressed genes in empty and compare to mean expressed genes in plate
-  if( ! any(spike.empty > 75))
+  use <- spike.empty > 75
+  if( sum(use) <= 75 ) 
     warning(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
-
-  emptyz<-empty[which(spike.empty>75)]  # take only wells which worked (>75 ERCC reads)
+  emptyz<-empty[use]  # take only wells which worked (>75 ERCC reads)
   emptyz<-rmspike(emptyz) # remove ERCCs
   mean.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
   mean.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
@@ -306,10 +306,7 @@ leakygenes<-function(data, emptywells) {
   non.overlap<-mean.empty[!names(mean.empty) %in% names(mean.all)]
   b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 overlapping genes",sub="barcode leaking in %", xlab="log2(sum of reads in empty)",horiz=TRUE)
   text(0.5,b, round((mean.empty[names(overlap)[1:10]]/mean.all[names(overlap)[1:10]])*100,2))
-  if (length(overlap)==50){
+  if (length(overlap)==50)
     warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
-  }
-  else{
-    barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
-  }
+  barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
 }                                       #leakygenes
