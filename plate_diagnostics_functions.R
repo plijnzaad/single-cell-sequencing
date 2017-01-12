@@ -281,15 +281,16 @@ leakygenes<-function(data, emptywells) {
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
   genes.empty<-apply(rmspike(empty),2,function(x) sum(x>=1)) # remove ERCC reads
   spike.empty<-colSums(keepspike(empty)) # keep only ERCC reads
-  genespike<-data.frame(genes=genes.empty,ERCC=spike.empty)
+  empties<-data.frame(genes=genes.empty,ERCC=spike.empty)
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
     warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", names[[i]], n, length(emptywells)))
   ## plot genes/cell and ERCC reads/cell for empty wells
   par(mar = c(5, 4, 6, 1))
-  barplot(t(genespike),main="total genes and ERCCs \n in empty wells",
-          col=c("blue","red"),space=rep(c(0.7,0),8),cex.names = 0.8,las=3,beside=TRUE,
-          legend=colnames(genespike),args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
+  barplot(t(empties),main="total genes and ERCCs \n in empty wells",
+          col=c("blue","red"),space=rep(c(5/nrow(empties),0),nrow(empties)),cex.names = 0.8,las=3,beside=TRUE,
+          legend=colnames(empties),
+          args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
   
   # determine top expressed genes in empty and compare to mean expressed genes in plate
   if( ! any(spike.empty > 75))
@@ -311,4 +312,4 @@ leakygenes<-function(data, emptywells) {
   else{
     barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
   }
-}
+}                                       #leakygenes
