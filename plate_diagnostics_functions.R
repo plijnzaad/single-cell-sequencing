@@ -298,14 +298,14 @@ leakygenes<-function(data, emptywells) {
     warning(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
   emptyz<-empty[use]  # take only wells which worked (>75 ERCC reads)
   emptyz<-rmspike(emptyz) # remove ERCCs
-  mean.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
-  mean.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
-  names(mean.empty)<-sapply(names(mean.empty),chop_chr) # remove __chr* from name
-  names(mean.all)<-sapply(names(mean.all),chop_chr) # remove __chr* from name
-  overlap<-mean.empty[names(mean.empty) %in% names(mean.all)] # check overal between top 50 empty and 200 in plate
-  non.overlap<-mean.empty[!names(mean.empty) %in% names(mean.all)]
+  top.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
+  top.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
+  names(top.empty)<-sapply(names(top.empty),chop_chr) # remove __chr* from name
+  names(top.all)<-sapply(names(top.all),chop_chr) # remove __chr* from name
+  overlap<-top.empty[names(top.empty) %in% names(top.all)] # check overal between top 50 empty and 200 in plate
+  non.overlap<-top.empty[!names(top.empty) %in% names(top.all)]
   b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 overlapping genes",sub="barcode leaking in %", xlab="log2(sum of reads in empty)",horiz=TRUE)
-  text(0.5,b, round((mean.empty[names(overlap)[1:10]]/mean.all[names(overlap)[1:10]])*100,2))
+  text(0.5,b, round((top.empty[names(overlap)[1:10]]/top.all[names(overlap)[1:10]])*100,2))
   if (length(overlap)==50)
     warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
   barplot(log2(rev(non.overlap[1:length(non.overlap)])),las=1,cex.names = 0.6, main="top 50 empty well genes \n not in top 200 plate genes", xlab="log2(mean expression)",horiz=TRUE)
