@@ -92,23 +92,30 @@ overseq2 <- function(x,y) {
   mtext(sprintf("median: %.1f",median(rc.v/bc.v)), col="red", cex=0.6)
 }
 
+commafy <- function(x, preserve.width="common") { 
+  ## commafy(12345678) => "12,345,678"
+  formatC(as.integer(x), format="d", big.mark=",", preserve.width=preserve.width)
+}
+  
 #plot total number of reads per sample
 totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo")){
   cex <- 0.6
   if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
-    a<-hist(log10(colSums(data)),breaks=100,xlab="log10(counts)",ylab="frequency",main="transcripts/cell",col="grey",xaxt="n",col.sub="red") 
-    axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1))],labels=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))])
-    axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
+    a<-hist(log10(colSums(data)),breaks=100,xlab="counts (log scale)",ylab="frequency",main="transcripts/cell",col="grey",xaxt="n",col.sub="red") 
+
+    ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
+    last <- which(ticks > max(a$breaks))[1]
+    ticks <- ticks[1:last]
+    axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
 
     mn <- mean(colSums(data))
     md <- median(colSums(data))
-    ## mtext(sprintf("mean: %.0f median: %0.f",mn,md),side=3,col="red",cex=0.5)
     abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"))
     text(x=min(a$breaks)+(0.5 + 0.3*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
          labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
          cex=cex)
-    text(log10(mn/2),max(a$counts)-2, 'half-mean', srt=0.2, col = "purple",pos=2, cex=cex/2)
+    text(log10(mn/2),max(a$counts)-2, 'half-mean', srt=0.2, col = "purple",pos=2, cex=cex*0.66)
   }
   
   if(plotmethod == "barplot"){
