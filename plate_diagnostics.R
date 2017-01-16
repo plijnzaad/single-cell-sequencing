@@ -6,12 +6,14 @@
 # plot one pdf per plate containing diagnostic plots
 # merge specified plates into one file that can be loaded into RaceID
 
-## questions can be addressed to m.muraro@hubrecht.eu
+## questions can be addressed to m.muraro@hubrecht.eu (and to plijnzaad@gmail.com)
 
 ####install/load packages and variables####
 source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
 require(RColorBrewer)
 require(oce)
+
+output.RaceID.file <- NULL
 
 # specify the location of your empty wells (follows primer number order)
 # if you don't have empty wells just specify O21-O24 and P21-P24.  
@@ -89,13 +91,12 @@ for(i in 1:length(tc)){
   dev.off()
 } #make pdf with diagnostic plots
 
+if (!is.null(output.RaceID.file)) { 
 ####merge and write multiple dataframes into one .csv####
-cdata_all<-tc[[1]] # should be first position you want to start merging from
-for (i in 2:length(tc)){
-  cdata_all <- intersectmatrix(cdata_all,tc[[i]]) #  JC's function intersectmatrix
-} # specify second position to last position you want to merge from-to
-cdata_all<- cdata_all[order(rownames(cdata_all)), ] #make row names alphabetical
-
-write.table(cdata_all,"/Users/mauro/AvO_lab/R/data files/DM23.csv", sep="\t") # this file can be loaded into RaceID
-
-
+    cdata_all<-tc[[1]] # should be first position you want to start merging from
+    for (i in 2:length(tc)){
+        cdata_all <- intersectmatrix(cdata_all,tc[[i]]) #  JC's function intersectmatrix
+    } # specify second position to last position you want to merge from-to
+    cdata_all<- cdata_all[order(rownames(cdata_all)), ] #make row names alphabetical
+    write.table(cdata_all,file=output.RaceID.file, sep="\t") # this file can be loaded into RaceID
+}
