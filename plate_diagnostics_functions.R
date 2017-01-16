@@ -92,7 +92,6 @@ overseq2 <- function(x,y) {
   mtext(sprintf("median: %.1f",median(rc.v/bc.v)), col="red", cex=0.6)
 }
 
-
 #plot total number of reads per sample
 totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo")){
   cex <- 0.6
@@ -104,10 +103,14 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
 
     mn <- mean(colSums(data))
     md <- median(colSums(data))
-    mtext(paste("mean:",round(mn)," median:", round(md)),side=3,col="red",cex=0.5)
-    abline(v=log10(mn/2),col="red")  ## @@@ why div by 2 ? 
-    text(log10(mn/2),max(a$counts)-2, round(mn/2), srt=0.2, col = "red",pos=2)
+    ## mtext(sprintf("mean: %.0f median: %0.f",mn,md),side=3,col="red",cex=0.5)
+    abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"))
+    text(x=min(a$breaks)+(0.5 + 0.3*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
+         labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
+         cex=cex)
+    text(log10(mn/2),max(a$counts)-2, 'half-mean', srt=0.2, col = "purple",pos=2, cex=cex/2)
   }
+  
   if(plotmethod == "barplot"){
     b<-barplot(colSums(data),xaxt="n",xlab="cells",sub=paste("mean total read:",round(mean(colSums(data)))),main="total unique reads",col="black",border=NA) 
     axis(1,at=b,labels=c(1:length(data))) # 1=horizontal at = position of marks
@@ -129,7 +132,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
               plot(ecdf(colSums(data)),pch=".",col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.8,xaxt="n",las=3,mgp=c(2,0.1,0),tck=1,bty="n"),
               debug = getOption("oceDebug"))
   }
-}
+}                                       #totalreads
 
 
 #plot complexity (number of unique genes detected) per cell
