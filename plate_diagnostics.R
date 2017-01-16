@@ -7,6 +7,7 @@
 # merge specified plates into one file that can be loaded into RaceID
 
 ## questions can be addressed to m.muraro@hubrecht.eu (and to plijnzaad@gmail.com)
+
 library(RColorBrewer)
 library(oce)
 source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
@@ -15,23 +16,20 @@ source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
 
 ####install/load packages and variables####
 
+### defaults (override them in config.R if needed)
+
+inputdir <- "."
+outputdir <- "."
+
+## specify the location of your empty wells (follows primer number order):
+emptywells <- c(357:360,381:384)
+
+##if and where to write merged data:
 output.RaceID.file <- NULL
 
-# specify the location of your empty wells (follows primer number order)
-# if you don't have empty wells just specify O21-O24 and P21-P24.  
-bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
-rightmost.col <- seq(24,384, by=24)
-emptywells <- rightmost.col
+source("./config.R") # for inspiration, see config.R.example
 
-## path to files with .cout* extention. NB: ALL files in the dir will be processed
-inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/mauro-pancreas/empty-wells/results"
-inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/actinomycin/1F/results/"
-inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/actinomycin/2F/results/"
-inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/2016_10_03/HL_thanasis/HL1/results/"
-inputdir <- "/hpc/dbg_gen/tmargaritis/data/Mauro/2016_10_03/HL_thanasis/HL2/results/"
-
-## where to leave the output:
-outputdir <- inputdir
+### ---- No configurable stuff below this line ----
 
 #variables for the script
 names<-list() # for the shortened names of the libraries

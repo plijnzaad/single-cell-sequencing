@@ -1,0 +1,16 @@
+## This file serves as an example of the config.R file included by file plate_diagnostics.R
+## It can override the following variables: emptywells, inputdir, outputdir, 
+##
+bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
+rightmost.col <- seq(24,384, by=24)
+
+## emptywells <- bottom.right
+emptywells <- rightmost.col
+
+## path to files with .cout* extentions. NB: ALL files in the dir will be processed
+inputdir <- "~/data/scRNAseq/P3/results"
+
+## where to leave the output:
+outputdir <- inputdir
+
+output.RaceID.file <- NULL
