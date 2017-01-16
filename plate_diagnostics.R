@@ -6,7 +6,7 @@
 # plot one pdf per plate containing diagnostic plots
 # merge specified plates into one file that can be loaded into RaceID
 
-## questions can be addressed to m.muraro@hubrecht.eu (and to plijnzaad@gmail.com)
+## questions can be addressed to m.muraro@hubrecht.eu (and/or plijnzaad@gmail.com)
 
 library(RColorBrewer)
 library(oce)
@@ -100,3 +100,8 @@ if (!is.null(output.RaceID.file)) {
     cdata_all<- cdata_all[order(rownames(cdata_all)), ] #make row names alphabetical
     write.table(cdata_all,file=output.RaceID.file, sep="\t") # this file can be loaded into RaceID
 }
+
+# Local variables:
+# mode: R
+# ess-indent-level: 2
+# End:
