@@ -79,7 +79,7 @@ setwd(outputdir)
 for(i in 1:length(tc)){
   pdf(paste(names[[i]],"_plate_diagnostics",".pdf",sep=""))
   par(mfrow = c(3,3)) # specify grid for plots on the pdf 
-  totalreads(tc[[i]],plotmethod = "hist") # plots total UMI reads/cell, can choose 4 different plot methods
+  totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # plots total UMI reads/cell, can choose 4 different plot methods
   cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
   plate.plots(tc[[i]]) # 3 plots: total reads, ERCC reads and division between the two over a plate layout

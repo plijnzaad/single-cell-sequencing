@@ -98,17 +98,34 @@ commafy <- function(x, preserve.width="common") {
 }
   
 #plot total number of reads per sample
-totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo")){
+totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
+                       emptywells=NULL) {
+  col.full <- rgb(0, 0.6, 0, 0.8)
+  col.empty <- rgb(0, 0, 0.6, 0.6)
+  magnif.empty <- 10
   cex <- 0.6
   if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
-    a<-hist(log10(colSums(data)),breaks=100,xlab="counts (log scale)",ylab="frequency",main="transcripts/cell",col="grey",xaxt="n",col.sub="red") 
-
+    a<-hist(plot=FALSE,x=log10(colSums(data)),breaks=100)
     ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
     last <- which(ticks > max(a$breaks))[1]
     ticks <- ticks[1:last]
-    axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
+    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="transcripts/cell",
+                     xaxt="n",col.sub="red", breaks=a$breaks,
+                     xlim=range(a$breaks), ylim=c(0, max(a$counts))) 
+    if(is.null(emptywells)) { 
+      do.call(hist, args=c(list(x=log10(colSums(data)),
+                      col=col.full, border=NA), rest.args))
+    } else {
+      do.call(hist, args=c(list(x=log10(colSums(data[,-emptywells])),
+                      col=col.full, border=NA), rest.args))
+      do.call(hist, args=c(list(x=rep(log10(colSums(data[,emptywells])),magnif.empty),
+                      col=col.empty, border=NA, add=TRUE), rest.args))
 
+      legend(x = "topleft", legend = c("full", sprintf("empty x %d", magnif.empty)),
+                              fill = c(col.full, col.empty), bty="n", cex=cex)
+    }
+    axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
     mn <- mean(colSums(data))
     md <- median(colSums(data))
     abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"))
@@ -116,8 +133,11 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"))
          labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
          cex=cex)
     text(log10(mn/2),max(a$counts)-2, 'half-mean', srt=0.2, col = "purple",pos=2, cex=cex*0.66)
+
+    return()
   }
-  
+  if(!is.null(emptywells))
+    stop("emptywells argument currently only works with plotmethod='hist'")
   if(plotmethod == "barplot"){
     b<-barplot(colSums(data),xaxt="n",xlab="cells",sub=paste("mean total read:",round(mean(colSums(data)))),main="total unique reads",col="black",border=NA) 
     axis(1,at=b,labels=c(1:length(data))) # 1=horizontal at = position of marks
@@ -343,3 +363,8 @@ leakygenes<-function(data, emptywells) {
               main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
   }
 }                                       #leakygenes
+
+# Local variables:
+# mode: R
+# ess-indent-level: 2
+# End:
