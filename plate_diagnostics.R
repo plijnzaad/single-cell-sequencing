@@ -7,11 +7,13 @@
 # merge specified plates into one file that can be loaded into RaceID
 
 ## questions can be addressed to m.muraro@hubrecht.eu (and to plijnzaad@gmail.com)
+library(RColorBrewer)
+library(oce)
+source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
+
+### ---- Configurable stuff: ----
 
 ####install/load packages and variables####
-source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
-require(RColorBrewer)
-require(oce)
 
 output.RaceID.file <- NULL
 
