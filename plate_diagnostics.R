@@ -61,7 +61,7 @@ for(i in 1:length(files)){
   rc[[i]] <- read.csv(paste(files[i],".coutc.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#") 
   bc[[i]] <- read.csv(paste(files[i],".coutb.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
   tc[[i]] <- read.csv(paste(files[i],".coutt.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
-  cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes") # reports number of genes found in each library
+  cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n") # reports number of genes found in each library
 }
 
 #label cells: all cells in library will get a _1 to _384 extension to the library name specified in names object
