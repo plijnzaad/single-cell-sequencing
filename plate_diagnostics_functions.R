@@ -81,14 +81,15 @@ intersectmatrix<-function(x,y){
 
 
 #overseq2, plot oversequencing per transcript
-overseq2 <- function(x,y){
-  main=paste("oversequencing_molecules")   # mixes string + name of choice
-  xlab=bquote(log[10] ~ "read counts / barcode counts")    #  subscript in string
-  rc.v<-as.vector(unlist(x))[as.vector(unlist(x>0))]  
-  bc.v<-as.vector(unlist(y))[as.vector(unlist(y>0))]
+overseq2 <- function(x,y) {
+  main=paste("oversequencing")   # mixes string + name of choice
+#  xlab=bquote(log[10] ~ "read counts / barcode counts")    #  subscript in string
+  xlab <- "log2(read count/barcode count)"
+  rc.v<- unlist(x); rc.v <- rc.v[rc.v>0]
+  bc.v<- unlist(y); bc.v <- bc.v[bc.v>0]
   results<-rc.v/bc.v
-  sub=paste("median",round(median(rc.v/bc.v),3),sep=" ")
-  hist(log10(results),breaks=75, col="red", main=main,xlab=xlab,sub=sub)
+  hist(log2(results),breaks=75, col="red", main=main,xlab=xlab)
+  mtext(sprintf("median: %.3f",median(rc.v/bc.v)), col="red", cex=0.6)
 }
 
 
