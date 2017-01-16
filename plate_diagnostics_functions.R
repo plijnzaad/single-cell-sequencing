@@ -217,18 +217,18 @@ plate.plots<-function(data) {
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%%",sum((spike/total)>0.05)/384*100),col="red",cex=cex)
 }
 
-# plot the top 20 genes with expresion bar and then a CV plot for the same genes
+# plot the top 20 genes with expression bar and then barplot their index of dispersion
 topgenes<-function(data){
-data<-rmspike(data)
-means<-apply(data,1,mean)
-vars<-apply(data,1,var)
-cv<-vars/means
-means<-means[order(means, decreasing = TRUE)]
-cv<-cv[order(cv, decreasing = TRUE)]
-names(means)<-sapply(names(means),chop_chr)
-names(cv)<-sapply(names(cv),chop_chr)
-barplot(log2(rev(means[1:20])),las=1,cex.names = 0.5, main="top expressed genes", xlab="log2(mean expression)",horiz=TRUE)
-barplot(log2(rev(cv[1:20])),las=1,cex.names = 0.5, main="top noisy genes",xlab="log2(var/mean)",horiz=TRUE)
+    data<-rmspike(data)
+    means<-apply(data,1,mean)
+    vars<-apply(data,1,var)
+    idx.disp<-vars/means
+    means<-means[order(means, decreasing = TRUE)]
+    idx.disp<-idx.disp[order(idx.disp, decreasing = TRUE)]
+    names(means)<-sapply(names(means),chop_chr)
+    names(idx.disp)<-sapply(names(idx.disp),chop_chr)
+    barplot(log2(rev(means[1:20])),las=1,cex.names = 0.5, main="top expressed genes", xlab="log2(mean expression)",horiz=TRUE)
+    barplot(log2(rev(idx.disp[1:20])),las=1,cex.names = 0.5, main="top noisy genes",xlab="log2(var/mean)",horiz=TRUE)
 }
 
 
