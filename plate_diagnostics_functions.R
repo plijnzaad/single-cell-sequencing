@@ -188,23 +188,31 @@ testcutoff<-function(data,n,pdf=FALSE){
     
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
-plate.plots<-function(data){
-  cex <- 0.4
+plate.plots<-function(data) {
+  cex <- 0.6
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
   spike<-colSums(keepspike(data))+0.1
   # calculate sum of spike in per cell
   total<-colSums(rmspike(data+0.1)) # sum of unique reads after removing spike ins
   palette <- colorRampPalette(rev(brewer.pal(n = 11,name = "RdYlBu")))(10) # pick which palette for plate plotting
   coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
-  plot(expand.grid(x = 1:24, y = 1:16),main="gene txpts",ylab=NA,xlab=NA, type="n") #plate layout
+
+  .plot.grid <- function(main) { 
+      plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
+           axes=FALSE, frame.plot=TRUE)
+      axis(1, at=1:24, labels=1:24, cex.axis=0.4,las=3)
+      axis(2, at=1:16, labels=rev(LETTERS[1:16]), cex.axis=0.4,las=1)
+  }
+
+  .plot.grid(main="gene txpts")
   points(coordinates,pch=19,col=palette[cut(log10(total),10)]) # plot total non-ERCC reads/cell over layout
   mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
 
-  plot(expand.grid(x = c(1:24), y = c(1:16)),main="ERCC txpts",ylab=NA,xlab=NA, type="n") #plate layout
+  .plot.grid(main="ERCC txpts")
   points(coordinates,pch=19,col=palette[cut(log10(spike),10)]) #plot sum of spike ins over plate
   mtext(sprintf(">100 ERCCs : %.0f%%",sum(colSums(keepspike(data))>100)/384*100),col="red",cex=cex)
   
-  plot(expand.grid(x = c(1:24), y = c(1:16)),main="ERCC/non-ERCC",ylab=NA,xlab=NA, type="n") 
+  .plot.grid(main="ERCCs/genes")
   points(coordinates,pch=19,col=palette[cut(spike/total,10)]) #plot ERCC reads/non-ERCC reads/cell
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%%",sum((spike/total)>0.05)/384*100),col="red",cex=cex)
 }
