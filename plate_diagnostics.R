@@ -32,9 +32,9 @@ outputdir <- inputdir
 #variables for the script
 names<-list() # for the shortened names of the libraries
 split_files<-list() # for  full names of the plates without .cout* extension
-tc<-list() # list of .coutt files
-rc<-list() # list of .coutc files
-bc<-list() # list of .coutb files
+rc<-list() # list of .coutc files (raw reads)
+bc<-list() # list of .coutb files (umis)
+tc<-list() # list of .coutt files (transcripts)
 
 #### OPTIONAL: Merge CS1-type libraries into one 384-column long CS2-type file####
 # do this ONLY if you have CS1-style (4 libraries in one plate) data that you want to run this script on
@@ -56,9 +56,9 @@ for(i in 1:length(files)){
   names[[i]] <-  sub("\\_.*","",split_files[[i]]) # split lib name to keep only name supplied by you to cuppen group 
   cat("\n",split_files[[i]],"was renamed to",names[[i]],"\n",sep = " ") # fyi how the libraries will be named
   cat("reading .cout files for plate",i, "out of", length(files),"\n",sep = " ") # reports progress
-  tc[[i]] <- read.csv(paste(files[i],".coutt.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
   rc[[i]] <- read.csv(paste(files[i],".coutc.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#") 
   bc[[i]] <- read.csv(paste(files[i],".coutb.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  tc[[i]] <- read.csv(paste(files[i],".coutt.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes") # reports number of genes found in each library
 }
 
