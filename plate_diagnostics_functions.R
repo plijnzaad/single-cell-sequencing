@@ -309,6 +309,12 @@ leakygenes<-function(data, emptywells) {
   names(top.empty)<-sapply(names(top.empty),chop_chr) # remove __chr* from name
   names(top.all)<-sapply(names(top.all),chop_chr) # remove __chr* from name
   o <- names(top.empty) %in% names(top.all)
+  if(sum(o)==0) {
+      barplot(0,las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
+             sub="no overlap!", xlab="log2(sum(reads in empty))",horiz=TRUE)
+      barplot(0,las=1,cex.names = 0.6, sub="all genes!",
+              main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
+  } else {
   overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
   non.overlap<-top.empty[ !o ]
   b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
