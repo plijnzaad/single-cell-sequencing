@@ -96,7 +96,22 @@ commafy <- function(x, preserve.width="common") {
   ## commafy(12345678) => "12,345,678"
   formatC(as.integer(x), format="d", big.mark=",", preserve.width=preserve.width)
 }
-  
+
+infobox <- function(dir, filename,totals) {
+  ## print filename and some overal statistics
+  plot(type="n", x=c(0,1), y=c(0,1), axes=FALSE, xlab=NA,ylab=NA, main="Information")
+  len <- nchar(dir); maxlen <- 30
+  if(len>maxlen)
+    dir <- substr(dir,start=(len-maxlen)+1, stop=len)
+  text(pos=4, x=0, y=0.9, paste0("dir: ", dir))
+  text(pos=4, x=0, y=0.8, paste0("file: ", filename))
+  text(pos=4, x=0, y=0.7, sprintf("refgenes: %d", totals['ngenes']))
+  text(pos=4, x=0, y=0.6, sprintf("ECCS: %d", totals['nspikes']))
+  text(pos=4, x=0, y=0.5, paste0("total reads: ", commafy(totals['reads'])))
+  text(pos=4, x=0, y=0.4, paste0("total umis: ",  commafy(totals['umis'])))
+  text(pos=4, x=0, y=0.3, paste0("total txpts:",  commafy(totals['txpts'])))
+}
+
 #plot total number of reads per sample
 totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
                        emptywells=NULL) {
