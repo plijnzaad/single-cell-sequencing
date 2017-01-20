@@ -231,6 +231,12 @@ testcutoff<-function(data,n,pdf=FALSE){
   }    
 }
     
+.plot.grid <- function(main) { 
+  plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
+       axes=FALSE, frame.plot=TRUE)
+  axis(1, at=1:24, labels=1:24, cex.axis=0.4,las=3)
+  axis(2, at=1:16, labels=rev(LETTERS[1:16]), cex.axis=0.4,las=1)
+}
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
 plate.plots<-function(data) {
@@ -240,34 +246,50 @@ plate.plots<-function(data) {
   spike<-colSums(keepspike(data))+0.1
   # calculate sum of spike in per cell
   total<-colSums(rmspike(data+0.1)) # sum of unique reads after removing spike ins
-  palette <- colorRampPalette(rev(brewer.pal(n = 11,name = "RdYlBu")))(10) # pick which palette for plate plotting
-  coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
+
+  counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
   mar <- par()$mar
   save.mar <- mar
   mar[1] <- mar[1]*1.3                  #to get right aspect ratio for the plates
   mar[3] <- mar[3]*1.3
-  par(mar=mar)
-  .plot.grid <- function(main) { 
-      plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
-           axes=FALSE, frame.plot=TRUE)
-      axis(1, at=1:24, labels=1:24, cex.axis=0.4,las=3)
-      axis(2, at=1:16, labels=rev(LETTERS[1:16]), cex.axis=0.4,las=1)
-  }
+  par(mar=mar, xpd=TRUE)
+
+  scale.top <- -2.5; scale.bot <- -3.5
+
+  coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
 
   .plot.grid(main="gene txpts")
-  points(coordinates,pch=19,col=palette[cut(log10(total),10)], cex=cex.wells)
+  col <- colorize(x=log10(total), counts.palette)
+  ticks <- 1:5
+  points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
+  draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
+                   col=counts.palette, main="log10")
 
   .plot.grid(main="ERCC txpts")
-  points(coordinates,pch=19,col=palette[cut(log10(spike),10)], cex=cex.wells)
+  col <- colorize(x=log10(spike), counts.palette)
+  ticks <- -1:4
+  points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">100 ERCCs : %.0f%%",sum(colSums(keepspike(data))>100)/384*100),col="red",cex=cex)
+  draw.color.scale(xleft=1, xright=24, ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
+                   col=counts.palette, main="log10")
   
-  .plot.grid(main="ERCCs/genes")
-  points(coordinates,pch=19,col=palette[cut(spike/total,10)], cex=cex.wells)
+  .plot.grid(main="ratio ERCCs/genes")
+
+  ## separate palette for ratios?
+  ## use 3-color scale for ratios, but middle must correspond to '0':
+  ## low <- "#313695";mid="#FFFFBF"; high="#A50026"   ## same as RdYlBu
+  ## low <- "cyan";mid="black"; high="yellow"   ## same as RdYlBu
+  ## ticks <- -10:2
+  ## ratio.palette <- c(colorRampPalette(c(low,mid))(100), colorRampPalette(c(mid,high))(31))
+  col <- colorize(x=log2(spike/total), counts.palette)
+  points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%%",sum((spike/total)>0.05)/384*100),col="red",cex=cex)
-  par(mar=save.mar)
-}
+  draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
+                   col=counts.palette, main="log2")
+  par(mar=save.mar, xpd=FALSE)
+}                                       # plate.plots
 
 # plot the top 20 genes with expression bar and then barplot their index of dispersion
 topgenes<-function(data){
@@ -385,6 +407,96 @@ leakygenes<-function(data, emptywells) {
               main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
   }
 }                                       #leakygenes
+
+colorize <- function(x, palette,min=pmin(x), max=pmax(x)) {
+## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1237
+  if(length(dim(x))>0)
+    stop("colorize: need simple vector")
+  stopifnot(is.numeric(x))
+  names <- names(x)
+  if(is.null(min)) min <- min(x)
+  if(is.null(max)) max <- max(x)
+  x[ x<min ] <- min
+  x[ x>max ] <- max
+
+  n.colors <- length(palette)
+  breaks <- seq(from=min(x), to=max(x), length.out=n.colors+1)
+  levels <- cut(x, breaks=breaks,right=FALSE, labels=FALSE, include=TRUE)
+  col <- palette[levels]
+  names(col) <- names
+  col
+}                                       #colorize
+
+draw.color.scale <- function(xleft,xright, ybottom, ytop, # e.g. from locator
+## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1237
+                        range=NULL, col,
+                        main=NA, # main: the title (should call this label?)
+                        cex.main=0.8, 
+                        offset.main=0.5,
+                        at=c(range[1],mean(range),range[2]),# tick label locations in scale coordinates
+                        labels=as.character(at), # the tick labels
+                        cex.axis=cex.main,
+                        offset.axis=NA,
+                        sep=0.5
+                         ) {
+  ## needs corners of the strip with the colors (get an initial
+  ## position using locator()), rest is done automagically.
+  ## See also plotrix::color.legend
+  if(is.null(at) && is.null(range))
+    stop("Not both the 'at' and the 'range' arguments can be NULL")
+  if(is.null(at))
+    at <- c(range[1],mean(range),range[2])
+  if(is.null(range))
+    range <- range(at)
+
+  vertical <- (  abs(xleft-xright) < abs(ybottom-ytop)  )
+  if(is.na(offset.axis))
+    offset.axis <- if(vertical)0.2 else 0.4
+  
+  x <- range(c(xleft,xright))
+  y <- range(c(ybottom,ytop))
+  width <- x[2]-x[1]
+  height <- y[2] - y[1]
+  n.colors <- length(col)
+  if(vertical) { 
+    ys <- seq(from= y[1], to= y[2], length.out=n.colors+1)
+    rect(xleft= x[1],
+         xright = x[2],
+         ybottom= ys[1:n.colors],
+         ytop=ys[2:(n.colors+1)],
+         col=col,
+         border=NA)
+    if(is.character(main)|| is.expression(main)) ## Stupid warning on is.na(some.expression)
+      text(x=mean(c(xleft,xright)), y=ys[n.colors+1]+sep*width, offset=offset.main, pos=3,
+           labels=main, cex=cex.main)
+
+    ## axis:
+    ys <- y[1]+height*(at-range[1])/(range[2]-range[1])
+    segments(x0=xright+sep*width, x1=xright+sep*width, y0=ys[1],y1=ys[length(ys)]) #line
+    segments(x0=xright+sep*width, x1=xright+(2*sep)*width, y0=ys,y1=ys) #ticks
+    text(x=xright + 2*sep*width, y=ys, offset=offset.axis, pos=4,
+         labels=labels, cex=cex.axis)
+    
+  } else {
+    xs <- seq(from= x[1], to= x[2], length.out=n.colors+1)
+    rect(ybottom= y[1],
+         ytop = y[2],
+         xleft= xs[1:n.colors],
+         xright=xs[2:(n.colors+1)],
+         col=col,
+         border=NA
+         )
+
+    if(is.character(main)||is.expression(main)) ## title to the right of the bar
+      text(y=ybottom + 0.5*height, x=xs[n.colors+1], pos=4,
+           labels=main, cex=cex.main, offset=offset.main)
+    xs <- x[1]+width*(at-range[1])/(range[2]-range[1])
+    segments(y0=ybottom-sep*height, y1=ybottom-sep*height, x0=xs[1],x1=xs[length(xs)]) #line
+    segments(y0=ybottom-sep*height, y1=ybottom-(2*sep)*height, x0=xs,x1=xs) #ticks
+    text(y=ybottom-2*sep*height, x=xs, labels=labels, cex=cex.axis,
+         offset=offset.axis, pos=1)
+  }
+}                                     #draw.color.scale
 
 # Local variables:
 # mode: R
