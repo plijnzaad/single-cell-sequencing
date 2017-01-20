@@ -21,6 +21,8 @@ source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
 inputdir <- "."
 outputdir <- "."
 
+landscape.mode <- TRUE
+
 ## specify the location of your empty wells (follows primer number order):
 emptywells <- c(357:360,381:384)
 
@@ -77,8 +79,15 @@ if(FALSE)
 dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn't exist
 setwd(outputdir)
 for(i in 1:length(tc)){
-  pdf(paste(names[[i]],"_plate_diagnostics",".pdf",sep=""))
-  par(mfrow = c(3,3)) # specify grid for plots on the pdf 
+  A4.width <- 8.3; A4.height <- 11.7
+  file <- paste0(names[[i]],"_plate_diagnostics.pdf")
+  if(landscape.mode) { 
+    pdf(file=file, width=A4.height, height=A4.width)
+    par(mfrow = c(3,4)) # specify grid for plots on the pdf
+  } else {
+    pdf(file=file, width=A4.width, height=A4.height)
+    par(mfrow = c(4,3)) # specify grid for plots on the pdf
+  }
   totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # plots total UMI reads/cell, can choose 4 different plot methods
   cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule

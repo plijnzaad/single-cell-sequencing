@@ -1,5 +1,5 @@
 ## This file serves as an example of the config.R file included by file plate_diagnostics.R
-## It can override the following variables: emptywells, inputdir, outputdir, 
+## It can override the following variables: emptywells, inputdir, outputdir, landscape.mode
 ##
 bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
 rightmost.col <- seq(24,384, by=24)
@@ -14,3 +14,6 @@ inputdir <- "~/data/scRNAseq/P3/results"
 outputdir <- inputdir
 
 output.RaceID.file <- NULL
+
+## use landscape mode (default is portrait):
+landscape.mode <- TRUE

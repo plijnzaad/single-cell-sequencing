@@ -220,6 +220,7 @@ testcutoff<-function(data,n,pdf=FALSE){
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
 plate.plots<-function(data) {
   cex <- 0.6
+  cex.wells <- 1.1
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
   spike<-colSums(keepspike(data))+0.1
   # calculate sum of spike in per cell
@@ -227,6 +228,11 @@ plate.plots<-function(data) {
   palette <- colorRampPalette(rev(brewer.pal(n = 11,name = "RdYlBu")))(10) # pick which palette for plate plotting
   coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
 
+  mar <- par()$mar
+  save.mar <- mar
+  mar[1] <- mar[1]*1.3                  #to get right aspect ratio for the plates
+  mar[3] <- mar[3]*1.3
+  par(mar=mar)
   .plot.grid <- function(main) { 
       plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
            axes=FALSE, frame.plot=TRUE)
@@ -235,16 +241,17 @@ plate.plots<-function(data) {
   }
 
   .plot.grid(main="gene txpts")
-  points(coordinates,pch=19,col=palette[cut(log10(total),10)]) # plot total non-ERCC reads/cell over layout
+  points(coordinates,pch=19,col=palette[cut(log10(total),10)], cex=cex.wells)
   mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
 
   .plot.grid(main="ERCC txpts")
-  points(coordinates,pch=19,col=palette[cut(log10(spike),10)]) #plot sum of spike ins over plate
+  points(coordinates,pch=19,col=palette[cut(log10(spike),10)], cex=cex.wells)
   mtext(sprintf(">100 ERCCs : %.0f%%",sum(colSums(keepspike(data))>100)/384*100),col="red",cex=cex)
   
   .plot.grid(main="ERCCs/genes")
-  points(coordinates,pch=19,col=palette[cut(spike/total,10)]) #plot ERCC reads/non-ERCC reads/cell
+  points(coordinates,pch=19,col=palette[cut(spike/total,10)], cex=cex.wells)
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%%",sum((spike/total)>0.05)/384*100),col="red",cex=cex)
+  par(mar=save.mar)
 }
 
 # plot the top 20 genes with expression bar and then barplot their index of dispersion
