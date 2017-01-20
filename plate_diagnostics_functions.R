@@ -302,7 +302,7 @@ topgenes<-function(data){
     names(means)<-sapply(names(means),chop_chr)
     names(idx.disp)<-sapply(names(idx.disp),chop_chr)
     barplot(log2(rev(means[1:20])),las=1,cex.names = 0.5, main="top expressed genes", xlab="log2(mean expression)",horiz=TRUE)
-    barplot(log2(rev(idx.disp[1:20])),las=1,cex.names = 0.5, main="top noisy genes",xlab="log2(var/mean)",horiz=TRUE)
+    barplot(log2(rev(idx.disp[1:20])),las=1,cex.names = 0.5, main="top varying genes",xlab="log2(var/mean)",horiz=TRUE)
 }
 
 
@@ -361,6 +361,12 @@ wellname <- function(i,j=NULL) {
       m[row,col]
 }
 
+.empty.overlap <- function(main, msg) {
+  plot(type="n", x=c(0,1), y=c(0,1), main=main, axes=FALSE,
+       xlab="log2(sum(reads in empty))",ylab="")
+  text(pos=4, x=0, y=0.5, labels=msg, cex=1)
+}
+
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
 leakygenes<-function(data, emptywells) {
   empty<-data[emptywells] # subset data to the wells specified as empty
@@ -391,10 +397,8 @@ leakygenes<-function(data, emptywells) {
   names(top.all)<-sapply(names(top.all),chop_chr) # remove __chr* from name
   o <- names(top.empty) %in% names(top.all)
   if(sum(o)==0) {
-      barplot(0,las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
-             sub="no overlap!", xlab="log2(sum(reads in empty))",horiz=TRUE)
-      barplot(0,las=1,cex.names = 0.6, sub="all genes!",
-              main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
+    .empty.overlap(main="top 10 of overlap between \n top50-empty and top200-all", msg="no overlap!")
+    .empty.overlap(main="genes from top50-empty\n not in top200-all", msg="all genes!")
   } else {
       overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
       non.overlap<-top.empty[ !o ]
