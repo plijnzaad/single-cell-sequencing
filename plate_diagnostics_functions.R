@@ -412,22 +412,25 @@ leakygenes<-function(data, emptywells) {
   }
 }                                       #leakygenes
 
-colorize <- function(x, palette,min=pmin(x), max=pmax(x)) {
-## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1237
+colorize <- function(x, palette, min=NULL, max=NULL, na.col='grey') {
+## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1240
   if(length(dim(x))>0)
     stop("colorize: need simple vector")
   stopifnot(is.numeric(x))
   names <- names(x)
-  if(is.null(min)) min <- min(x)
-  if(is.null(max)) max <- max(x)
+
+  if(is.null(min)) min <- min(x, na.rm=TRUE)
+  if(is.null(max)) max <- max(x, na.rm=TRUE)
+  
   x[ x<min ] <- min
   x[ x>max ] <- max
 
   n.colors <- length(palette)
-  breaks <- seq(from=min(x), to=max(x), length.out=n.colors+1)
+  breaks <- seq(from=min, to=max, length.out=n.colors+1)
   levels <- cut(x, breaks=breaks,right=FALSE, labels=FALSE, include=TRUE)
   col <- palette[levels]
   names(col) <- names
+  col[is.na(col)] <- na.col
   col
 }                                       #colorize
 
