@@ -10,7 +10,15 @@
 
 library(RColorBrewer)
 library(oce)
-source("~/git/single-cell-sequencing/plate_diagnostics_functions.R")
+
+script.dir <- "~/git/single-cell-sequencing"
+
+## config.dir <- '.'
+config.dir <- script.dir
+
+config.file <- paste0(config.dir, "/plate_diagnostics_config.R")
+
+source(paste0(script.dir,"/plate_diagnostics_functions.R"))
 
 ### ---- Configurable stuff: ----
 
@@ -29,7 +37,7 @@ emptywells <- c(357:360,381:384)
 ##if and where to write merged data:
 output.RaceID.file <- NULL
 
-source("./config.R") # for inspiration, see config.R.example
+source(config.file) # for inspiration, see config.R.example
 
 ### ---- No configurable stuff below this line ----
 
