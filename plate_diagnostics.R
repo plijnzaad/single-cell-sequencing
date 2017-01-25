@@ -13,17 +13,9 @@ library(oce)
 
 script.dir <- "~/git/single-cell-sequencing"
 
-## config.dir <- '.'
-config.dir <- script.dir
-
-config.file <- paste0(config.dir, "/plate_diagnostics_config.R")
-
 source(paste0(script.dir,"/plate_diagnostics_functions.R"))
 
 ### ---- Configurable stuff: ----
-
-####install/load packages and variables####
-
 ### defaults (override them in config.R if needed)
 
 inputdir <- "."
@@ -36,6 +28,9 @@ emptywells <- c(357:360,381:384)
 
 ##if and where to write merged data:
 output.RaceID.file <- NULL
+
+config.dir <- '.'
+config.file <- paste0(config.dir, "/plate_diagnostics_config.R")
 
 source(config.file) # for inspiration, see config.R.example
 
