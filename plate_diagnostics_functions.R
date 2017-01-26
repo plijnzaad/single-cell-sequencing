@@ -158,7 +158,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
     axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
     mn <- mean(colSums(data))
     md <- median(colSums(data))
-    abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"))
+    abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"), lty=2, lwd=0.5)
     text(x=min(a$breaks)+(0.5 + 0.3*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
          labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
          cex=cex)
