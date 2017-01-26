@@ -11,9 +11,9 @@
 library(RColorBrewer)
 library(oce)
 
-script.dir <- "~/git/single-cell-sequencing"
+script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 
-source(paste0(script.dir,"/plate_diagnostics_functions.R"))
+source(script)
 
 ### ---- Configurable stuff: ----
 ### defaults (override them in config.R if needed)
@@ -96,7 +96,7 @@ for(i in 1:length(tc)){
   }
 
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=sum(rc[[i]]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
-  infobox(dir=inputdir,filename=split_files[i],totals=totals)
+  infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
   totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # plots total UMI reads/cell, can choose 4 different plot methods
   cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule

@@ -97,19 +97,34 @@ commafy <- function(x, preserve.width="common") {
   formatC(as.integer(x), format="d", big.mark=",", preserve.width=preserve.width)
 }
 
-infobox <- function(dir, filename,totals) {
-  ## print filename and some overal statistics
+getversion <- function(path) {
+  dir <- dirname(normalizePath(path))
+  cmd <- sprintf("cd %s && git describe --match 'v[0-9]*' --tags --dirty", dir)
+  res <- system(cmd, intern=TRUE)
+  if( length(res)==0)
+      res <- 'UNKNOWN'
+  res
+}                                       #getversion
+
+infobox <- function(script, dir, filename,totals) {
+  ## print version filename and some overal statistics
   plot(type="n", x=c(0,1), y=c(0,1), axes=FALSE, xlab=NA,ylab=NA, main="Information")
   len <- nchar(dir); maxlen <- 30
   if(len>maxlen)
     dir <- substr(dir,start=(len-maxlen)+1, stop=len)
-  text(pos=4, x=0, y=0.9, paste0("dir: ", dir))
-  text(pos=4, x=0, y=0.8, paste0("file: ", filename))
-  text(pos=4, x=0, y=0.7, sprintf("refgenes: %d", totals['ngenes']))
-  text(pos=4, x=0, y=0.6, sprintf("ECCS: %d", totals['nspikes']))
-  text(pos=4, x=0, y=0.5, paste0("total reads: ", commafy(totals['reads'])))
-  text(pos=4, x=0, y=0.4, paste0("total umis: ",  commafy(totals['umis'])))
-  text(pos=4, x=0, y=0.3, paste0("total txpts:",  commafy(totals['txpts'])))
+
+  text <- c(
+    paste0("script version:", getversion(script)),
+    paste0("dir: ", dir),
+    paste0("file: ", filename),
+    sprintf("refgenes: %d", totals['ngenes']),
+    sprintf("ECCS: %d", totals['nspikes']),
+    paste0("total reads: ", commafy(totals['reads'])),
+    paste0("total umis: ",  commafy(totals['umis'])),
+    paste0("total txpts:",  commafy(totals['txpts']))
+    )
+
+  text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
 }
 
 #plot total number of reads per sample
@@ -504,6 +519,7 @@ draw.color.scale <- function(xleft,xright, ybottom, ytop, # e.g. from locator
          offset=offset.axis, pos=1)
   }
 }                                     #draw.color.scale
+
 
 # Local variables:
 # mode: R
