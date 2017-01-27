@@ -31,8 +31,8 @@ output.RaceID.file <- NULL
 
 config.dir <- '.'
 config.file <- paste0(config.dir, "/plate_diagnostics_config.R")
-
-source(config.file) # for inspiration, see config.R.example
+if (file.exists(config.file))
+  source(config.file)            # for inspiration, see config.R.example
 
 ### ---- No configurable stuff below this line ----
 
