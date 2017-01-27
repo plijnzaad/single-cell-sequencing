@@ -250,7 +250,7 @@ testcutoff<-function(data,n,pdf=FALSE){
     xlab = "cutoff (mean transcript no.)",main=main,type="b",lty=2,pch=19)
   }    
 }
-    
+
 .empty.plot <- function(main, msg) {
   plot(type="n", x=c(0,1), y=c(0,1), main=main, axes=FALSE,xlab="",ylab="")
   text(pos=4, x=0, y=0.5, labels=msg, cex=1)
@@ -264,7 +264,7 @@ testcutoff<-function(data,n,pdf=FALSE){
 }
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
-plate.plots<-function(data) {
+plate.plots<-function(data, welltotals=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
@@ -284,9 +284,23 @@ plate.plots<-function(data) {
 
   coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
 
+  if(is.null(welltotals))
+    .empty.plot(main="mapped gene reads", msg="stats not given")
+  else { 
+    .plot.grid(main="mapped gene reads")
+    perc <- with(welltotals, 100*(mapped/(mapped+unmapped)))
+    col <- colorize(perc, counts.palette)
+
+    ticks <- seq(0,100,10)
+    points(coordinates,pch=19,col=col, cex=cex.wells)
+    ## mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
+    draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
+                     col=counts.palette, main="%")
+  }
+
   .plot.grid(main="gene txpts")
   col <- colorize(x=log10(total), counts.palette)
-  ticks <- 1:5
+  ticks <- 1:5 
   points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,

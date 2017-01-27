@@ -64,17 +64,21 @@ for(i in 1:length(files)){
   names[[i]] <-  sub("\\_.*","",split_files[[i]]) # split lib name to keep only name supplied by you to cuppen group 
   cat("\n",split_files[[i]],"was renamed to",names[[i]],"\n",sep = " ") # fyi how the libraries will be named
   cat("reading .cout files for plate",i, "out of", length(files),"\n",sep = " ") # reports progress
-  counts <- paste(files[i],".coutc.csv", sep="")
-  rc[[i]] <- read.csv(file=counts, header = TRUE, sep = "\t",row.names =1, comment.char="#")
-  stats[[i]] <- read.stats(file=counts)
-  bc[[i]] <- read.csv(paste(files[i],".coutb.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
-  tc[[i]] <- read.csv(paste(files[i],".coutt.csv", sep=""), header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  counts.file <- paste(files[i],".coutc.csv", sep="")
+  umi.file <- paste(files[i],".coutb.csv", sep="")
+  txpt.file <- paste(files[i],".coutt.csv", sep="")
+  rc[[i]] <- read.csv(file=counts.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  bc[[i]] <- read.csv(file=umi.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  tc[[i]] <- read.csv(file=txpt.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  stats[[i]] <- read.stats(file=counts.file)
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
 }
 
-ngenes <- nrow(rmspike(rc[[1]]))
-nspikes <- nrow(keepspike(rc[[1]]))
-valid <- sum(rc[[1]])
+genes <- rmspike(rc[[1]])
+ngenes <- nrow(genes)
+spikes <- keepspike(rc[[1]])
+nspikes <- nrow(spikes)
+totvalid <- sum(rc[[1]])
 st <- apply(stats[[1]], 1, sum)
 
 #label cells: all cells in library will get a _1 to _384 extension to the library name specified in names object
@@ -100,12 +104,14 @@ for(i in 1:length(tc)){
     par(mfrow = c(4,3)) # specify grid for plots on the pdf
   }
   
-  totals <- c(ngenes=ngenes, nspikes=nspikes, reads=valid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
+  totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
   infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
   totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # plots total UMI reads/cell, can choose 4 different plot methods
   cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
-  plate.plots(tc[[i]]) # 3 plots: total reads, ERCC reads and division between the two over a plate layout
+  wells.mapped <- apply(genes,2,sum)
+  wells.unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes!!
+  plate.plots(data=tc[[i]],welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped)) # 4 plots: perc. mapped; total reads, ERCC reads and division between the two over a plate layout
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(data=tc[[i]], emptywells=emptywells) # NB: this function can give errors if you don't have ERCCs or very few succesfully sequenced cells. comment out in case of errors
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5
