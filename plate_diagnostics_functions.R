@@ -109,6 +109,7 @@ getversion <- function(path) {
 infobox <- function(script, dir, filename,totals) {
   ## print version filename and some overal statistics
   plot(type="n", x=c(0,1), y=c(0,1), axes=FALSE, xlab=NA,ylab=NA, main="Information")
+  dir <- dirname(normalizePath(dir))
   len <- nchar(dir); maxlen <- 30
   if(len>maxlen)
     dir <- substr(dir,start=(len-maxlen)+1, stop=len)
@@ -117,7 +118,7 @@ infobox <- function(script, dir, filename,totals) {
   valid <- totals['reads']
   totreads <- valid + unmapped #note: ignores all those without a valid CBC, and more!
   text <- c(
-    paste0("script version:", getversion(script)),
+    paste0("script version: ", getversion(script)),
     paste0("dir: ", dir),
     paste0("file: ", filename),
     sprintf("refgenes found: %d", totals['ngenes']),
@@ -125,7 +126,7 @@ infobox <- function(script, dir, filename,totals) {
     sprintf("total reads with CBC*: %s\n\t mapped: %s (%.1f %%) ",
             commafy(totreads), commafy(valid), 100*valid/totreads),
     paste0("total umis: ",  commafy(totals['umis'])),
-    paste0("total txpts:",  commafy(totals['txpts']))
+    paste0("total txpts: ",  commafy(totals['txpts']))
     )
 
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
@@ -144,7 +145,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
     ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
     last <- which(ticks > max(a$breaks))[1]
     ticks <- ticks[1:last]
-    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="transcripts/cell",
+    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="transcripts/well",
                      xaxt="n",col.sub="red", breaks=a$breaks,
                      xlim=range(a$breaks), ylim=c(0, max(a$counts))) 
     if(is.null(emptywells)) { 
@@ -207,7 +208,7 @@ cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")){
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
   }
   if(plotmethod == "cumulative"){
-    plot(ecdf(genes),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cum. complexity",cex.axis=1,las=1,tck=1)
+    plot(ecdf(genes),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cumul. complexity",cex.axis=1,las=1,tck=1)
     mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
   }
   if(plotmethod == "combo"){
@@ -525,7 +526,7 @@ draw.color.scale <- function(xleft,xright, ybottom, ytop, # e.g. from locator
 }                                     #draw.color.scale
 
 read.stats <- function(file) {
-  x <- read.csv(file=counts, nrows=4, header = TRUE, sep = "\t",row.names =1, comment.char="")
+  x <- read.csv(file=file, nrows=4, header = TRUE, sep = "\t",row.names =1, comment.char="")
   rownames(x) <- gsub("^#","", rownames(x))
   x
 }                                       #read.stats
