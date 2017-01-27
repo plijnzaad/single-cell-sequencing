@@ -251,6 +251,11 @@ testcutoff<-function(data,n,pdf=FALSE){
   }    
 }
     
+.empty.plot <- function(main, msg) {
+  plot(type="n", x=c(0,1), y=c(0,1), main=main, axes=FALSE,xlab="",ylab="")
+  text(pos=4, x=0, y=0.5, labels=msg, cex=1)
+}
+   
 .plot.grid <- function(main) { 
   plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
        axes=FALSE, frame.plot=TRUE)
@@ -381,11 +386,6 @@ wellname <- function(i,j=NULL) {
       m[row,col]
 }
 
-.empty.overlap <- function(main, msg) {
-  plot(type="n", x=c(0,1), y=c(0,1), main=main, axes=FALSE,
-       xlab="log2(sum(reads in empty))",ylab="")
-  text(pos=4, x=0, y=0.5, labels=msg, cex=1)
-}
 
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
 leakygenes<-function(data, emptywells) {
@@ -417,8 +417,8 @@ leakygenes<-function(data, emptywells) {
   names(top.all)<-sapply(names(top.all),chop_chr) # remove __chr* from name
   o <- names(top.empty) %in% names(top.all)
   if(sum(o)==0) {
-    .empty.overlap(main="top 10 of overlap between \n top50-empty and top200-all", msg="no overlap!")
-    .empty.overlap(main="genes from top50-empty\n not in top200-all", msg="all genes!")
+    .empty.plot(main="top 10 of overlap between \n top50-empty and top200-all", msg="no overlap!")
+    .empty.plot(main="genes from top50-empty\n not in top200-all", msg="all genes!")
   } else {
       overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
       non.overlap<-top.empty[ !o ]
