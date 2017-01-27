@@ -113,13 +113,17 @@ infobox <- function(script, dir, filename,totals) {
   if(len>maxlen)
     dir <- substr(dir,start=(len-maxlen)+1, stop=len)
 
+  unmapped <- totals['unmapped']
+  valid <- totals['reads']
+  totreads <- valid + unmapped #note: ignores all those without a valid CBC, and more!
   text <- c(
     paste0("script version:", getversion(script)),
     paste0("dir: ", dir),
     paste0("file: ", filename),
-    sprintf("refgenes: %d", totals['ngenes']),
-    sprintf("ECCS: %d", totals['nspikes']),
-    paste0("total reads: ", commafy(totals['reads'])),
+    sprintf("refgenes found: %d", totals['ngenes']),
+    sprintf("ECCS found: %d", totals['nspikes']),
+    sprintf("total reads with CBC*: %s\n\t mapped: %s (%.1f %%) ",
+            commafy(totreads), commafy(valid), 100*valid/totreads),
     paste0("total umis: ",  commafy(totals['umis'])),
     paste0("total txpts:",  commafy(totals['txpts']))
     )
@@ -519,6 +523,12 @@ draw.color.scale <- function(xleft,xright, ybottom, ytop, # e.g. from locator
          offset=offset.axis, pos=1)
   }
 }                                     #draw.color.scale
+
+read.stats <- function(file) {
+  x <- read.csv(file=counts, nrows=4, header = TRUE, sep = "\t",row.names =1, comment.char="")
+  rownames(x) <- gsub("^#","", rownames(x))
+  x
+}                                       #read.stats
 
 
 # Local variables:
