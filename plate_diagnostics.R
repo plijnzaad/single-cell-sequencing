@@ -60,7 +60,7 @@ setwd(inputdir)
 files <- read_files(dir = getwd())
 
 # read in files
-split_files <-sub(".*\\/","",files) 
+split_files <-sub(".*\\/","",files)
 for(i in 1:length(files)){
   names[[i]] <-  sub("\\_.*","",split_files[[i]]) # split lib name to keep only name supplied by you to cuppen group 
   cat("\n",split_files[[i]],"was renamed to",names[[i]],"\n",sep = " ") # fyi how the libraries will be named
@@ -68,9 +68,9 @@ for(i in 1:length(files)){
   counts.file <- paste(files[i],".coutc.csv", sep="")
   umi.file <- paste(files[i],".coutb.csv", sep="")
   txpt.file <- paste(files[i],".coutt.csv", sep="")
-  rc[[i]] <- read.csv(file=counts.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
-  bc[[i]] <- read.csv(file=umi.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
-  tc[[i]] <- read.csv(file=txpt.file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  rc[[i]] <- read.counts(file=counts.file)
+  bc[[i]] <- read.counts(file=umi.file)
+  tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
 }
@@ -81,9 +81,6 @@ spikes <- keepspike(rc[[1]])
 nspikes <- nrow(spikes)
 totvalid <- sum(rc[[1]])
 st <- apply(stats[[1]], 1, sum)
-
-#label cells: all cells in library will get a _1 to _384 extension to the library name specified in names object
-for(i in 1:length(tc)){ colnames(tc[[i]])<-paste(names[[i]],c(1:384),sep="_") }
 
 # OPTIONAL: rename part of a specified plate if you have different experiments in one plate
 # do this only for one of the .coutt files at the time by choosing the correct location in the .coutt list (eg:tc[[5]])

@@ -31,6 +31,7 @@ mvgeneid<-function(data){
 #reorder cells from four CS1 primer libraries into one 384 column-long library
 # libraries is a vector containing the four library names, in the order A1,A2,B1,B2
 reorder.cs1<-function(libraries,name){
+  stop("this function may have stopped working due to explicit column naming and automatic reordering")
   tc<-list()
   rc<-list()
   bc<-list()
@@ -388,12 +389,14 @@ read_files <- function(dir = "", name = Sys.Date()){
   return(output)
 }
 
-wellname <- function(i,j=NULL) {
-    ## returns name of well given its index (or coordinates)
+wellname <- function(i=NULL,j=NULL) {
+    ## returns name of all wells (i==NULL), or given its index (J=NULL) or coordinates
     rows <- LETTERS[1:16]
     cols <- 1:24
     m <- matrix(kronecker(X=rows, Y=as.character(cols), FUN=paste0),byrow=TRUE,
                 nrow=length(rows),ncol=length(cols), dimnames=list(rows,cols))
+    if(is.null(i))
+      return(t(m))
     if(is.null(j))
       t(m)[i]
     else
@@ -539,9 +542,22 @@ draw.color.scale <- function(xleft,xright, ybottom, ytop, # e.g. from locator
   }
 }                                     #draw.color.scale
 
+read.counts <- function(file) {
+  wellnames <- as.vector(wellname())
+  x <- read.csv(file=file, header = TRUE, sep = "\t",row.names =1, comment.char="#")
+  if (! setequal(colnames(x), wellnames))
+    stop("Wellnames should be A1-24, B1-24, ..., P1-P24")
+  x <- x[,wellnames]
+  x
+}
+
 read.stats <- function(file) {
+  wellnames <- as.vector(wellname())
   x <- read.csv(file=file, nrows=4, header = TRUE, sep = "\t",row.names =1, comment.char="")
   rownames(x) <- gsub("^#","", rownames(x))
+  if (! setequal(colnames(x), wellnames))
+    stop("Wellnames should be A1-24, B1-24, ..., P1-P24")
+  x <- x[,wellnames]
   x
 }                                       #read.stats
 
