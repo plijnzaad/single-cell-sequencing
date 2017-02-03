@@ -24,7 +24,8 @@ outputdir <- "."
 landscape.mode <- TRUE
 
 ## specify the location of your empty wells (follows primer number order):
-emptywells <- c(357:360,381:384)
+## emptywells <- c(357:360,381:384)        # bottomright 8 wells
+emptywells <- seq(24,384, by=24)        # rightmost column
 
 ##if and where to write merged data:
 output.RaceID.file <- NULL
