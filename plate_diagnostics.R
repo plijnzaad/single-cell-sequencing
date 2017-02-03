@@ -109,7 +109,9 @@ for(i in 1:length(tc)){
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
   wells.mapped <- apply(genes,2,sum)
   wells.unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes!!
-  plate.plots(data=tc[[i]],welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped)) # 4 plots: perc. mapped; total reads, ERCC reads and division between the two over a plate layout
+  plate.plots(data=tc[[i]],
+              welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped),
+              emptywells=emptywells) # 4 plots: perc. mapped; total reads, ERCC reads and division between the two over a plate layout
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(data=tc[[i]], emptywells=emptywells) # NB: this function can give errors if you don't have ERCCs or very few succesfully sequenced cells. comment out in case of errors
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5

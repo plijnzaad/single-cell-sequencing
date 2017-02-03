@@ -257,15 +257,25 @@ testcutoff<-function(data,n,pdf=FALSE){
   text(pos=4, x=0, y=0.5, labels=msg, cex=1)
 }
    
-.plot.grid <- function(main) { 
-  plot(expand.grid(x = c(1:24), y = c(1:16)),main=main, xlab=NA, ylab=NA, type="n",
+.plot.grid <- function(main, emptywells=NULL) {
+  g <- expand.grid(x = c(1:24), y = c(1:16))
+  plot(g,main=main, xlab=NA, ylab=NA, type="n",
        axes=FALSE, frame.plot=TRUE)
   axis(1, at=1:24, labels=1:24, cex.axis=0.4,las=3)
   axis(2, at=1:16, labels=rev(LETTERS[1:16]), cex.axis=0.4,las=1)
+  if(is.null(emptywells))
+    return
+  x <- range(g[emptywells,'x'])
+  x[1] <- x[1]-0.45
+  x[2] <- x[2]+0.45
+  y <- range(g[emptywells,'y'])
+  y[1] <- 16 - (y[1]-0.45) + 1
+  y[2] <- 16 - (y[2]+0.45) + 1
+  rect(xleft=x[1],xright=x[2], ybottom=y[1],ytop=y[2], col=NA, border="grey")
 }
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
-plate.plots<-function(data, welltotals=NULL) {
+plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
@@ -288,7 +298,7 @@ plate.plots<-function(data, welltotals=NULL) {
   if(is.null(welltotals))
     .empty.plot(main="mapped gene reads", msg="stats not given")
   else { 
-    .plot.grid(main="mapped gene reads")
+    .plot.grid(main="mapped gene reads", emptywells=emptywells)
     perc <- with(welltotals, 100*(mapped/(mapped+unmapped)))
     col <- colorize(perc, counts.palette)
 
@@ -299,7 +309,7 @@ plate.plots<-function(data, welltotals=NULL) {
                      col=counts.palette, main="%")
   }
 
-  .plot.grid(main="gene txpts")
+  .plot.grid(main="gene txpts",emptywells=emptywells)
   col <- colorize(x=log10(total), counts.palette)
   ticks <- 1:5 
   points(coordinates,pch=19,col=col, cex=cex.wells)
@@ -307,7 +317,7 @@ plate.plots<-function(data, welltotals=NULL) {
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
                    col=counts.palette, main="log10")
 
-  .plot.grid(main="ERCC txpts")
+  .plot.grid(main="ERCC txpts",emptywells=emptywells)
   col <- colorize(x=log10(spike), counts.palette)
   ticks <- -1:4
   points(coordinates,pch=19,col=col, cex=cex.wells)
@@ -315,7 +325,7 @@ plate.plots<-function(data, welltotals=NULL) {
   draw.color.scale(xleft=1, xright=24, ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main="log10")
   
-  .plot.grid(main="ratio ERCCs/genes")
+  .plot.grid(main="ratio ERCCs/genes", emptywells=emptywells)
 
   ## separate palette for ratios?
   ## use 3-color scale for ratios, but middle must correspond to '0':
