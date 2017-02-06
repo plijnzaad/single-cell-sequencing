@@ -357,7 +357,7 @@ topgenes<-function(data){
 
 
 #Read files in specified directory automatically (based on Thoms script)
-read_files <- function(dir = "", name = Sys.Date()){
+read_files <- function(dir = ""){
   
   #add "/" to dir
   if(substr(dir, start = nchar(dir), stop = nchar(dir)) != "/" && dir != ""){
