@@ -197,7 +197,6 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
   }
 }                                       #totalreads
 
-
 #plot complexity (number of unique genes detected) per cell
 cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")){
   cex <- 0.6
@@ -220,7 +219,38 @@ cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")){
               plot(ecdf(colSums(data)),pch=19,col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.6,las=3),
               debug = getOption("oceDebug"))
   }
-}
+}                                       #cellgenes
+
+coverage.plot <- function(data, type='genes') {       
+  if (is.null(data)) {
+    .empty.plot(main="coverage", msg="no data")
+    return()
+  }
+  max.ntxpts <- 25000                     # or new argument transcriptome.size?
+  cex <- 0.6
+  
+  if (type=='genes') { 
+    with(data,
+         plot(main="gene coverage", x=reads, y=genes, xlab="reads seen",ylab="unique genes seen",
+              ylim=c(0, max.ntxpts), type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+    return()
+  }
+
+  if (type=='umis') { 
+    with(data,
+         plot(main="transcript coverage", x=reads, y=umis, xlab="reads seen",ylab="unique transcripts seen",
+              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+    return()
+  }
+
+  if (type=='umis.per.gene') { 
+    with(data,
+         plot(main="mean transcripts/gene", x=reads, y=umis/genes, xlab="reads seen",ylab="unique transcripts/unique gene seen",
+              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+    return()
+  }
+  stop("Unknown coverage.plot type, only know 'genes', 'umis', 'umis.per.gene'")
+}                                       #coverage.plot
 
 #plot ERCC reads
 plotspike<-function(data){

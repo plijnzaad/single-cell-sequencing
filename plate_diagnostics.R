@@ -44,6 +44,7 @@ split_files<-list() # for  full names of the plates without .cout* extension
 rc<-list() # list of .coutc files (raw reads)
 bc<-list() # list of .coutb files (umis)
 tc<-list() # list of .coutt files (transcripts)
+genesseen <- list() # table with number of SAM lines, and number of different genes seen so far
 stats<-list() # list of stats (written as comment on top to the *.coutt.csv file)
 
 #### OPTIONAL: Merge CS1-type libraries into one 384-column long CS2-type file####
@@ -73,6 +74,16 @@ for(i in 1:length(files)){
   bc[[i]] <- read.counts(file=umi.file)
   tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
+  genesseen.file <- paste0(names[[i]], "-genesseen.txt")
+  if(file.exists(genesseen.file)) {
+    tab <- read.table(file=genesseen.file, sep="\t",
+                                 as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
+    expected.cols <- c("reads", "genes", "umis") # first few columns, ignore the rest
+    ## if(ncol(tab)!= length(expected.cols))
+    ##  stop("File ", genesseen.file ," does not have 6 columns ", paste(expected.cols, sep=" "))
+    colnames(tab)[1:length(expected.cols)] <- expected.cols
+    genesseen[[i]] <- tab
+  }
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
 }
 
@@ -113,6 +124,9 @@ for(i in 1:length(tc)){
   plate.plots(data=tc[[i]],
               welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped),
               emptywells=emptywells) # 4 plots: perc. mapped; total reads, ERCC reads and division between the two over a plate layout
+  coverage.plot(data=genesseen[[i]], type='genes')
+  coverage.plot(data=genesseen[[i]], type='umis')
+  coverage.plot(data=genesseen[[i]], type='umis.per.gene')
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(data=tc[[i]], emptywells=emptywells) # NB: this function can give errors if you don't have ERCCs or very few succesfully sequenced cells. comment out in case of errors
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5
