@@ -11,6 +11,7 @@
 library(RColorBrewer)
 library(oce)
 
+rm(list=ls())                           #to avoid copypaste-errors
 script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 
 source(script)
