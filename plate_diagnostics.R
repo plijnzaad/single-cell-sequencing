@@ -17,24 +17,28 @@ script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 source(script)
 
 ### ---- Configurable stuff: ----
-### defaults (override them in config.R if needed)
+### defaults. If file plate_diagnostics_config.R is found in config.dir, it is read, which can be used
+### to override the defaults
 
 inputdir <- "."
-outputdir <- "."
-
-landscape.mode <- TRUE
+outputdir <- inputdir
 
 ## specify the location of your empty wells (follows primer number order):
 ## emptywells <- c(357:360,381:384)        # bottomright 8 wells
 emptywells <- seq(24,384, by=24)        # rightmost column
 
+landscape.mode <- TRUE
+
 ##if and where to write merged data:
 output.RaceID.file <- NULL
 
-config.dir <- '.'
-config.file <- paste0(config.dir, "/plate_diagnostics_config.R")
-if (file.exists(config.file))
+config.file <- "plate_diagnostics_config.R"
+
+if (file.exists(config.file)) {
+  warning("Seeing file ", normalizePath(config.file), ", sourcing it\n")
   source(config.file)            # for inspiration, see config.R.example
+} else
+  warning("Not seeing file ", config.file, ", using default settings\n")
 
 ### ---- No configurable stuff below this line ----
 

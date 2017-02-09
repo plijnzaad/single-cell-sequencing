@@ -1,19 +1,23 @@
-## This file serves as an example of the config.R file included by file plate_diagnostics.R
-## It can override the following variables: emptywells, inputdir, outputdir, landscape.mode
+## This file serves as an example of the plate_diagnostics_config.R file
+## that is source()d by file plate_diagnostics.R 
 ##
-bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
-rightmost.col <- seq(24,384, by=24)
-
-## emptywells <- bottom.right
-emptywells <- rightmost.col
+## It can override the following variables: emptywells, inputdir,
+## outputdir, landscape.mode, output.RaceID.file
 
 ## path to files with .cout* extentions. NB: ALL files in the dir will be processed
-inputdir <- "~/data/scRNAseq/P3/results"
+## inputdir <- "."
 
 ## where to leave the output:
-outputdir <- inputdir
+## outputdir <- inputdir
 
-output.RaceID.file <- NULL
+## bottom.right <- c(357:360,381:384) # this corresponds to O21-O24 and P21-P24
+## rightmost.col <- seq(24,384, by=24)
+## 
+## emptywells <- rightmost.col
 
 ## use landscape mode (default is portrait):
-landscape.mode <- TRUE
+## landscape.mode <- TRUE
+
+## wether or not to create RaceID input file:
+output.RaceID.file <- NULL
+
