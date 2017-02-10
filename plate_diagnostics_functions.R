@@ -3,12 +3,13 @@
 #remove or keep only spike ins from given data frame
 rmspike<-function(x){
   ERCCs<-grep("ERCC-",row.names(x)) # gives vector with row # of spike ins
-  data<-x[-ERCCs,] # make new data frame without the specified rows
+  data<-x[-ERCCs,,drop=FALSE] # make new data frame without the specified rows
   return(data) # output new data frame
 }
+
 keepspike<-function(x){
   ERCCs<-grep("ERCC-",row.names(x)) # gives vector with row # of spike ins
-  data<-x[ERCCs,] # make new data frame with only the specified rows
+  data<-x[ERCCs,,drop=FALSE] # make new data frame with only the specified rows
   return(data) # output new data frame
 }
 
@@ -450,7 +451,7 @@ leakygenes<-function(data, emptywells) {
   names(empty)<-sapply(emptywells, wellname)
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
   genes.empty<-apply(rmspike(empty),2,function(x) sum(x>=1)) # remove ERCC reads
-  spike.empty<-colSums(keepspike(empty)) # keep only ERCC reads
+  spike.empty<-colSums(keepspike(empty))
   empties<-data.frame(genes=genes.empty,ERCC=spike.empty)
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
@@ -462,12 +463,18 @@ leakygenes<-function(data, emptywells) {
           legend=colnames(empties),
           args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
   
-  # determine top expressed genes in empty and compare to mean expressed genes in plate
+  # determine top expressed genes in empty and compare to mean expressed genes in plate, but
+  # only use empty wells that have at least 75 ERCC reads (otherwise that well did not work)
   use <- spike.empty > 75
-  if( sum(use) <= 75 ) 
-    warning(paste("There are no samples with more than 75 ERCC reads in", names[[i]]))
-  emptyz<-empty[use]  # take only wells which worked (>75 ERCC reads)
-  emptyz<-rmspike(emptyz) # remove ERCCs
+  if( sum(use)== 0 ) {
+    .empty.plot(main="top 10 of overlap between \n top50-empty and top200-all", msg="no empty wells with >= 75 reads")
+    .empty.plot(main="genes from top50-empty\n not in top200-all", msg="no empty wells with >= 75 reads")
+    return()
+  }
+  if( sum(use)== 1 )
+    warning(paste("Just one empty well with at least 75 ERCC reads, in", names[[i]]))
+  emptyz<-empty[use]  # take only wells that worked
+  emptyz<-rmspike(emptyz)
   top.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
   top.all<-apply(data,1,sum)[order(apply(data,1,sum),decreasing=TRUE)][1:200] # pick top 200 in plate
   names(top.empty)<-sapply(names(top.empty),chop_chr) # remove __chr* from name
@@ -476,7 +483,8 @@ leakygenes<-function(data, emptywells) {
   if(sum(o)==0) {
     .empty.plot(main="top 10 of overlap between \n top50-empty and top200-all", msg="no overlap!")
     .empty.plot(main="genes from top50-empty\n not in top200-all", msg="all genes!")
-  } else {
+    return()
+  } 
       overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
       non.overlap<-top.empty[ !o ]
       b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
