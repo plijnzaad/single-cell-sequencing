@@ -310,9 +310,9 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
   # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
-  spike<-colSums(keepspike(data))+0.1
-  # calculate sum of spike in per cell
-  total<-colSums(rmspike(data+0.1)) # sum of unique reads after removing spike ins
+  spike.total<-colSums(keepspike(data))
+  genes <- rmspike(data)
+  gene.total<-colSums(genes) # sum of unique reads after removing spike ins
 
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
@@ -341,7 +341,8 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   }
 
   .plot.grid(main="gene txpts",emptywells=emptywells)
-  col <- colorize(x=log10(total), counts.palette)
+  l <- log10(gene.total); l[!is.finite(l)] <- NA
+  col <- colorize(x=l, counts.palette)
   ticks <- 1:5 
   points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">1000 unique reads: %.0f%%",sum(colSums(genes)>1000)/384*100),col="red",cex=cex)
@@ -349,24 +350,20 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
                    col=counts.palette, main="log10")
 
   .plot.grid(main="ERCC txpts",emptywells=emptywells)
-  col <- colorize(x=log10(spike), counts.palette)
+  l <- log10(spike.total); l[!is.finite(l)] <- NA
+  col <- colorize(x=l, counts.palette)
   ticks <- -1:4
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  mtext(sprintf(">100 ERCCs : %.0f%%",sum(colSums(keepspike(data))>100)/384*100),col="red",cex=cex)
+  mtext(sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24, ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main="log10")
   
   .plot.grid(main="ratio ERCCs/genes", emptywells=emptywells)
 
-  ## separate palette for ratios?
-  ## use 3-color scale for ratios, but middle must correspond to '0':
-  ## low <- "#313695";mid="#FFFFBF"; high="#A50026"   ## same as RdYlBu
-  ## low <- "cyan";mid="black"; high="yellow"   ## same as RdYlBu
-  ## ticks <- -10:2
-  ## ratio.palette <- c(colorRampPalette(c(low,mid))(100), colorRampPalette(c(mid,high))(31))
-  col <- colorize(x=log2(spike/total), counts.palette)
+  l <- log2(spike.total/gene.total); l[!is.finite(l)] <- NA
+  col <- colorize(x=l, counts.palette)
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  mtext(sprintf(">ERCC/gene > 0.05: %.0f%%",sum((spike/total)>0.05)/384*100),col="red",cex=cex)
+  mtext(sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main="log2")
   par(mar=save.mar, xpd=FALSE)
@@ -485,18 +482,18 @@ leakygenes<-function(data, emptywells) {
     .empty.plot(main="genes from top50-empty\n not in top200-all", msg="all genes!")
     return()
   } 
-      overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
-      non.overlap<-top.empty[ !o ]
-      b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
-                 sub="leakage to empty in %", xlab="log2(sum(reads in empty))",horiz=TRUE)
-      text(0.5,b, round((top.empty[names(overlap)[1:10] ]/top.all[names(overlap)[1:10] ])*100,2))
-      if (length(overlap)==50)
-        warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
-      barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
-              main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
+  overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
+  non.overlap<-top.empty[ !o ]
+  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
+             sub="leakage to empty in %", xlab="log2(sum(reads in empty))",horiz=TRUE)
+  text(0.5,b, round((top.empty[names(overlap)[1:10] ]/top.all[names(overlap)[1:10] ])*100,2))
+  if (length(overlap)==50)
+    warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
+  barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
+          main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
 }                                       #leakygenes
 
-colorize <- function(x, palette, min=NULL, max=NULL, na.col='grey') {
+colorize <- function(x, palette, min=NULL, max=NULL, na.col='yellow3') {
 ## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1240
   if(length(dim(x))>0)
     stop("colorize: need simple vector")
