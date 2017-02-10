@@ -327,9 +327,9 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
 
   if(is.null(welltotals))
-    .empty.plot(main="mapped gene reads", msg="stats not given")
+    .empty.plot(main="% mapped gene reads", msg="stats not given")
   else { 
-    .plot.grid(main="mapped gene reads", emptywells=emptywells)
+    .plot.grid(main="% mapped gene reads", emptywells=emptywells)
     perc <- with(welltotals, 100*(mapped/(mapped+unmapped)))
     col <- colorize(perc, counts.palette)
 
@@ -344,7 +344,7 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   col <- colorize(x=log10(total), counts.palette)
   ticks <- 1:5 
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
+  mtext(sprintf(">1000 unique reads: %.0f%%",sum(colSums(genes)>1000)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
                    col=counts.palette, main="log10")
 
@@ -494,7 +494,6 @@ leakygenes<-function(data, emptywells) {
         warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
       barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
               main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
-  }
 }                                       #leakygenes
 
 colorize <- function(x, palette, min=NULL, max=NULL, na.col='grey') {
