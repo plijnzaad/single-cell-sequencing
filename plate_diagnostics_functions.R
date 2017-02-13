@@ -143,11 +143,11 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
   cex <- 0.6
   if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
-    a<-hist(plot=FALSE,x=log10(colSums(data)),breaks=100)
+    a<-hist(plot=FALSE,x=log10(colSums(rmspike(data))),breaks=100)
     ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
     last <- which(ticks > max(a$breaks))[1]
     ticks <- ticks[1:last]
-    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="transcripts/well",
+    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="gene transcripts/well",
                      xaxt="n",col.sub="red", breaks=a$breaks,
                      xlim=range(a$breaks), ylim=c(0, max(a$counts))) 
     if(is.null(emptywells)) { 
