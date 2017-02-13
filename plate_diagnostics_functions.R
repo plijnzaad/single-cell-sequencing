@@ -132,7 +132,7 @@ infobox <- function(script, dir, filename,totals) {
     )
 
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
-}
+}                                       #infobox
 
 #plot total number of reads per sample
 totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
@@ -147,7 +147,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
     ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
     last <- which(ticks > max(a$breaks))[1]
     ticks <- ticks[1:last]
-    rest.args <-list(xlab="counts (log scale)",ylab="frequency",main="gene transcripts/well",
+    rest.args <-list(xlab="counts",ylab="frequency",main="gene transcripts/well",
                      xaxt="n",col.sub="red", breaks=a$breaks,
                      xlim=range(a$breaks), ylim=c(0, max(a$counts))) 
     if(is.null(emptywells)) { 
@@ -201,23 +201,28 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
 }                                       #totalreads
 
 #plot complexity (number of unique genes detected) per cell
-cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")){
+cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")) {
   cex <- 0.6
   if ( ! plotmethod %in% c("hist","cumulative","combo") ) stop("invalid plotting method")
+
   genes<-apply(data,2,function(x) sum(x>=1))
+
   if(plotmethod == "hist"){
-    a<-hist(genes,breaks=100,xlab="total genes",ylab="frequency",main="detected genes/cell",col="steelblue1",xaxt="n") 
+    a<-hist(genes,breaks=100,xlab="total genes",ylab="frequency",main="unique genes detected/well",col="steelblue1",xaxt="n") 
     mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
   }
+
   if(plotmethod == "cumulative"){
     plot(ecdf(genes),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cumul. complexity",cex.axis=1,las=1,tck=1)
     mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
   }
+
   if(plotmethod == "combo"){
     a<-hist(genes,breaks=100,xlab="log10(counts)",ylab="frequency",main="detected genes/cell",col="steelblue1",xaxt="n") 
     mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
+
     plotInset(max(genes)/3,max(a$counts)/3,max(genes), max(a$counts),mar=c(1,1,1,1),
               plot(ecdf(colSums(data)),pch=19,col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.6,las=3),
               debug = getOption("oceDebug"))
@@ -311,8 +316,6 @@ testcutoff<-function(data,n,pdf=FALSE){
 plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
-  # genes<-apply(data,2,function(x) sum(x>=1))# calculate detected genes/cell
-  spike.total<-colSums(keepspike(data))
   genes <- rmspike(data)
   gene.total<-colSums(genes) # sum of unique reads after removing spike ins
 
@@ -326,14 +329,14 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
 
   scale.top <- -2.5; scale.bot <- -3.5
 
-  coordinates<-expand.grid(seq(1,24),rev(seq(1,16)))
+  coordinates <- expand.grid(seq(1,24),rev(seq(1,16)))
 
   if(is.null(welltotals))
     .empty.plot(main="% mapped gene reads", msg="stats not given")
   else { 
     .plot.grid(main="% mapped gene reads", emptywells=emptywells)
     perc <- with(welltotals, 100*(mapped/(mapped+unmapped)))
-    col <- colorize(perc, counts.palette)
+    col <- colorize(perc, counts.palette, na.col='white')
 
     ticks <- seq(0,100,10)
     points(coordinates,pch=19,col=col, cex=cex.wells)
@@ -344,16 +347,16 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
 
   .plot.grid(main="gene txpts",emptywells=emptywells)
   l <- log10(gene.total); l[!is.finite(l)] <- NA
-  col <- colorize(x=l, counts.palette)
-  ticks <- 1:5 
+  col <- colorize(x=l, counts.palette, na.col='white')
+  ticks <- 0:4 
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  mtext(sprintf(">1000 unique reads: %.0f%%",sum(colSums(genes)>1000)/384*100),col="red",cex=cex)
+  mtext(sprintf(">1000 unique genes: %.0f%%",sum(colSums(genes)>1000)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
                    col=counts.palette, main="log10")
 
   .plot.grid(main="ERCC txpts",emptywells=emptywells)
   l <- log10(spike.total); l[!is.finite(l)] <- NA
-  col <- colorize(x=l, counts.palette)
+  col <- colorize(x=l, counts.palette, na.col='white')
   ticks <- -1:4
   points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100),col="red",cex=cex)
@@ -363,7 +366,7 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   .plot.grid(main="ratio ERCCs/genes", emptywells=emptywells)
 
   l <- log2(spike.total/gene.total); l[!is.finite(l)] <- NA
-  col <- colorize(x=l, counts.palette)
+  col <- colorize(x=l, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
@@ -495,7 +498,7 @@ leakygenes<-function(data, emptywells) {
           main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
 }                                       #leakygenes
 
-colorize <- function(x, palette, min=NULL, max=NULL, na.col='yellow3') {
+colorize <- function(x, palette, min=NULL, max=NULL, na.col='grey') {
 ## taken from svn/pub/tools/general/R/uuutils/R/uuutils.R rev 1240
   if(length(dim(x))>0)
     stop("colorize: need simple vector")
