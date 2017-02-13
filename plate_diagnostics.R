@@ -120,7 +120,7 @@ for(i in 1:length(tc)){
   
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
   infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
-  totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # plots total UMI reads/cell, can choose 4 different plot methods
+  totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # total txpts/cell
   cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
   overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
   wells.mapped <- apply(genes,2,sum)

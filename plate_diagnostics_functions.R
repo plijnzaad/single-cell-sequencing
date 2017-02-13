@@ -141,7 +141,7 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
   col.empty <- rgb(0, 0, 0.6, 0.6)
   magnif.empty <- 10
   cex <- 0.6
-  if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
+  ## if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
     a<-hist(plot=FALSE,x=log10(colSums(rmspike(data))),breaks=100)
     ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
@@ -166,13 +166,15 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
     mn <- mean(colSums(data))
     md <- median(colSums(data))
     abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"), lty=2, lwd=0.5)
-    text(x=min(a$breaks)+(0.5 + 0.3*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
+    text(x=min(a$breaks)+(0.5 + 0.2*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
          labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
          cex=cex)
     text(log10(mn/2),max(a$counts)-2, 'half-mean', srt=0.2, col = "purple",pos=2, cex=cex*0.66)
 
     return()
   }
+  stop("Invalid method ", plotmethod," (older versions also had barplot, cumulative and combo, untested bu may still work)")
+
   if(!is.null(emptywells))
     stop("emptywells argument currently only works with plotmethod='hist'")
   if(plotmethod == "barplot"){
