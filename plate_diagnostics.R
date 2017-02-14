@@ -130,11 +130,13 @@ for(i in 1:length(tc)){
   coverage.plot(data=genesseen[[i]], type='genes')
   coverage.plot(data=genesseen[[i]], type='umis')
   coverage.plot(data=genesseen[[i]], type='umis.per.gene')
+  cellgenes(tc[[i]],plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
-  leakygenes(data=tc[[i]], emptywells=emptywells) # NB: this function can give errors if you don't have ERCCs or very few succesfully sequenced cells. comment out in case of errors
+  leakygenes(data=tc[[i]], emptywells=emptywells)
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5
   # (2): top expressed genes in the empty corner and % of their total reads in empty corner compared to total reads in whole plate.
   # (3): any genes that are in the top 50 genes in empty corner, but not in the top 200 genes in rest of plate (likely artifacts)
+  overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
   dev.off()
 } #make pdf with diagnostic plots
 
