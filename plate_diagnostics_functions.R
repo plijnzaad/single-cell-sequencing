@@ -205,26 +205,31 @@ cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")) {
   cex <- 0.6
   if ( ! plotmethod %in% c("hist","cumulative","combo") ) stop("invalid plotting method")
 
-  genes<-apply(data,2,function(x) sum(x>=1))
+  complexity<-apply(rmspike(data),2,function(x) sum(x>=1))
 
   if(plotmethod == "hist"){
-    a<-hist(genes,breaks=100,xlab="total genes",ylab="frequency",main="unique genes detected/well",col="steelblue1",xaxt="n") 
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
+    a<-hist(complexity,breaks=100,xlab="total genes",ylab="frequency",main="unique genes detected/well",col="steelblue1",xaxt="n") 
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
   }
 
   if(plotmethod == "cumulative"){
-    plot(ecdf(genes),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cumul. complexity",cex.axis=1,las=1,tck=1)
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
+    plot(ecdf(complexity),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cumul. complexity",cex.axis=1,las=1,tck=1)
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
   }
 
   if(plotmethod == "combo"){
-    a<-hist(genes,breaks=100,xlab="log10(counts)",ylab="frequency",main="detected genes/cell",col="steelblue1",xaxt="n") 
-    mtext(paste("mean:",round(mean(genes))," median:",round(median(genes))),side=3,col="red",cex=cex)
-    axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
+    ## a<-hist(complexity,breaks=100,ylab="frequency",main="complexity",xlab="unique genes/cell",col="steelblue1",xaxt="n")
+    d <- density(complexity, adjust=0.5)
+    xlim <- c(0, max(complexity))
+    plot(d,ylab="density",main="complexity",xlab="unique genes/cell",xlim=xlim, col="steelblue1", yaxt="n")
+    rug(complexity, ticksize= 0.02)
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
+    ### axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
 
-    plotInset(max(genes)/3,max(a$counts)/3,max(genes), max(a$counts),mar=c(1,1,1,1),
-              plot(ecdf(colSums(data)),pch=19,col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.6,las=3),
+    plotInset(xleft=xlim[2]/2.5, xright=xlim[2], ybottom=max(d$y)/2, ytop=max(d$y),mar=c(1,1,1,1),
+              plot(ecdf(complexity),xlim=c(0, 1.1*max(complexity)), xlab=NA,
+                   pch=NA,lwd=1,col="red",cex=cex,ylab=NA, main=NA, cex.axis=0.6, las=3),
               debug = getOption("oceDebug"))
   }
 }                                       #cellgenes
