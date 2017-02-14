@@ -371,32 +371,48 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
   }
 
   .plot.grid(main="gene txpts",emptywells=emptywells)
-  l <- log10(gene.total); l[!is.finite(l)] <- NA
+  l <- log10(gene.total)
+  infinite <- is.infinite(l)
+  l[infinite] <- NA
+  col <- colorize(x=l, counts.palette, na.col='white')
+  ticks <- 0:5
+  points(coordinates,pch=19,col=col, cex=cex.wells)
+  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
+  mtext(sprintf(">=1000 unique txpts: %.0f%%",sum(colSums(genes)>=1000)/384*100),col="red",cex=cex)
+  draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
+                   col=counts.palette, main="log10")
+
   .plot.grid(main="complexity",emptywells=emptywells)
   l <- log10(complexity)
   infinite <- is.infinite(l)
   l[infinite] <- NA
   col <- colorize(x=l, counts.palette, na.col='white')
-  ticks <- 0:4 
+  ticks <- 0:4
   points(coordinates,pch=19,col=col, cex=cex.wells)
+  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
   mtext(sprintf(">=1000 unique genes: %.0f%%",sum(complexity>=1000)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
                    col=counts.palette, main="log10")
 
   .plot.grid(main="ERCC txpts",emptywells=emptywells)
-  l <- log10(spike.total); l[!is.finite(l)] <- NA
+  l <- log10(spike.total)
+  infinite <- is.infinite(l)
+  l[infinite] <- NA
   col <- colorize(x=l, counts.palette, na.col='white')
   ticks <- -1:4
   points(coordinates,pch=19,col=col, cex=cex.wells)
+  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
   mtext(sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24, ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main="log10")
   
   .plot.grid(main="ratio ERCCs/genes", emptywells=emptywells)
-
-  l <- log2(spike.total/gene.total); l[!is.finite(l)] <- NA
+  l <- log2(spike.total/gene.total)
+  infinite <- is.infinite(l) | is.nan(l)
+  l[infinite] <- NA
   col <- colorize(x=l, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
+  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
   mtext(sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main="log2")
