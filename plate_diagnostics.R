@@ -107,7 +107,7 @@ if(FALSE)
 #### diagnostic plots####
 dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn't exist
 setwd(outputdir)
-for(i in 1:length(tc)){
+for(i in 1:length(tc)) {
   A4.width <- 8.3; A4.height <- 11.7
   file <- paste0(names[[i]],"_plate_diagnostics.pdf")
   if(landscape.mode) { 
@@ -120,17 +120,63 @@ for(i in 1:length(tc)){
   
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
   infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
-  totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # total txpts/cell
-  wells.mapped <- apply(genes,2,sum)
-  wells.unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes!!
-  plate.plots(data=tc[[i]],
-              welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped),
+
+  rawreads.total <- colSums(rmspike(rc[[i]]))
+  genes <- rmspike(tc[[i]])
+  gene.total<-colSums(genes) # sum of unique txpts after removing spike ins
+
+  totaltxpts(gene.total, plotmethod = "hist", emptywells=emptywells) # total txpts/cell
+
+  spike.total<-colSums(keepspike(tc[[i]]))
+  complexity<-apply(genes,2,function(x)sum(x>=1))
+
+  logdata <- log10(rawreads.total)
+  f <- logdata[ logdata != -Inf ] 
+  from <- floor(min(f))
+  to <- ceiling(max(logdata))
+  ticks <- from:to
+  plate.plot(data=logdata,
+              main='raw gene reads',
+              ticks=ticks,
+              scale.name="log10",
+              emptywells=emptywells)
+
+  mapped <- apply(genes,2,sum)
+  unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
+  perc <- 100*(mapped/(mapped+unmapped))
+  plate.plot(data=perc, main='% mapped gene reads',
+              ticks=seq(0,100,10),
+              scale.name="%",
+              emptywells=emptywells)
+
+  plate.plot(data=log10(gene.total), main='gene txpts',
+              ticks=0:5,
+              scale.name="log10",
               emptywells=emptywells,
-              rawreads=rc[[i]])
+              mtext=sprintf(">=1000 unique txpts: %.0f%%",sum(colSums(genes)>=1000)/384*100))
+
+  plate.plot(data=log10(complexity), main='complexity',
+              ticks=0:4,
+              scale.name="log10",
+              emptywells=emptywells,
+              mtext=sprintf(">=1000 unique genes: %.0f%%",sum(complexity>=1000)/384*100))
+
+  plate.plot(data=log10(spike.total), main='ERCC txpts',
+              ticks=-1:4,
+              scale.name="log10",
+              emptywells=emptywells,
+              mtext=sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100))
+
+  plate.plot(data=log2(spike.total/gene.total), main='ratio ERCC/gene txpts',
+              ticks=-4:4,
+              scale.name="log2",
+              emptywells=emptywells,
+              mtext=sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
+
   coverage.plot(data=genesseen[[i]], type='genes')
   coverage.plot(data=genesseen[[i]], type='umis')
   coverage.plot(data=genesseen[[i]], type='umis.per.gene')
-  cellgenes(tc[[i]],plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
+  cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(data=tc[[i]], emptywells=emptywells)
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5

@@ -134,8 +134,8 @@ infobox <- function(script, dir, filename,totals) {
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
 }                                       #infobox
 
-#plot total number of reads per sample
-totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
+#plot total number of transcripts per sample
+totaltxpts <- function(txpts,plotmethod=c("barplot","hist","cumulative","combo"),
                        emptywells=NULL) {
   col.full <- rgb(0, 0.6, 0, 0.8)
   col.empty <- rgb(0, 0, 0.6, 0.6)
@@ -143,28 +143,31 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
   cex <- 0.6
   ## if ( ! plotmethod %in% c("barplot","hist","cumulative","combo") ) stop("invalid method")
   if(plotmethod == "hist"){
-    a<-hist(plot=FALSE,x=log10(colSums(rmspike(data))),breaks=100)
-    ticks <- log10(as.vector(c(1,2,5) %o% 10^(0:9)))
+    logdata <- log10(txpts)
+    logdata[ logdata == -Inf ] <- log10(0.5)+0.01 # just to the right of to the zero-tick
+    a<-hist(plot=FALSE,x=logdata,breaks=100, right=FALSE)
+    ticks <- log10(as.vector(c(1,2,5) %o% 10^(-1:9)))
+    first <- which(ticks < min(a$breaks)); first <- first[length(first)]
     last <- which(ticks > max(a$breaks))[1]
-    ticks <- ticks[1:last]
+    ticks <- ticks[first:last]
     rest.args <-list(xlab="counts",ylab="frequency",main="gene transcripts/well",
                      xaxt="n",col.sub="red", breaks=a$breaks,
-                     xlim=range(a$breaks), ylim=c(0, max(a$counts))) 
+                     xlim=range(ticks), ylim=c(0, 1.2*max(a$counts))) 
     if(is.null(emptywells)) { 
-      do.call(hist, args=c(list(x=log10(colSums(data)),
+      do.call(hist, args=c(list(x=logdata,
                       col=col.full, border=NA), rest.args))
     } else {
-      do.call(hist, args=c(list(x=log10(colSums(data[,-emptywells])),
+      do.call(hist, args=c(list(x=logdata[-emptywells],
                       col=col.full, border=NA), rest.args))
-      do.call(hist, args=c(list(x=rep(log10(colSums(data[,emptywells])),magnif.empty),
+      do.call(hist, args=c(list(x=rep(logdata[emptywells],magnif.empty),
                       col=col.empty, border=NA, add=TRUE), rest.args))
 
       legend(x = "topleft", legend = c("full", sprintf("empty x %d", magnif.empty)),
                               fill = c(col.full, col.empty), bty="n", cex=cex)
     }
     axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
-    mn <- mean(colSums(data))
-    md <- median(colSums(data))
+    mn <- mean(txpts)
+    md <- median(txpts)
     abline(v=log10(c(mn/2,md,mn)),col=c("purple", "red", "brown"), lty=2, lwd=0.5)
     text(x=min(a$breaks)+(0.5 + 0.2*c(-1,1))*diff(range(a$breaks)), y=max(a$counts),
          labels=sprintf("%s: %.0f", c("median","mean"), c(md,mn)), col=c("red","brown"),
@@ -178,34 +181,32 @@ totalreads <- function(data,plotmethod=c("barplot","hist","cumulative","combo"),
   if(!is.null(emptywells))
     stop("emptywells argument currently only works with plotmethod='hist'")
   if(plotmethod == "barplot"){
-    b<-barplot(colSums(data),xaxt="n",xlab="cells",sub=paste("mean total read:",round(mean(colSums(data)))),main="total unique reads",col="black",border=NA) 
+    b<-barplot(txpts,xaxt="n",xlab="cells",sub=paste("mean total read:",round(mean(txpts))),main="total unique reads",col="black",border=NA) 
     axis(1,at=b,labels=c(1:length(data))) # 1=horizontal at = position of marks
-    abline(h=mean(colSums(data)),col="red")
+    abline(h=mean(txpts),col="red")
   }
   if(plotmethod == "cumulative"){
-    plot(ecdf(colSums(data)),xlab="total reads",ylab="fraction",main="total unique reads",col="red",tck=1,pch=19,cex=cex,cex.axis=0.8) 
-    abline(v=mean(colSums(data)/2),col="red")
-    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=cex)
+    plot(ecdf(txpts),xlab="total reads",ylab="fraction",main="total unique reads",col="red",tck=1,pch=19,cex=cex,cex.axis=0.8) 
+    abline(v=mean(txpts/2),col="red")
+    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="red",cex=cex)
   }
   
   if(plotmethod == "combo"){
-    a<-hist(log10(colSums(data)),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
-    mtext(paste("mean:",round(mean(colSums(data)))," median:",round(median(colSums(data)))),side=3,col="red",cex=cex)
+    a<-hist(log10(txpts),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
+    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="red",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))],labels=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))])
-    abline(v=log10(mean(colSums(data))/2),col="red")
-    text(log10(mean(colSums(data))/2),max(a$counts)-2, round(mean(colSums(data))/2), srt=0.2, col = "red",pos=2)
+    abline(v=log10(mean(txpts)/2),col="red")
+    text(log10(mean(txpts)/2),max(a$counts)-2, round(mean(txpts)/2), srt=0.2, col = "red",pos=2)
     plotInset(log10(1),max(a$counts)/4,log10(250), max(a$counts),mar=c(1,1,1,1),
-              plot(ecdf(colSums(data)),pch=".",col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.8,xaxt="n",las=3,mgp=c(2,0.1,0),tck=1,bty="n"),
+              plot(ecdf(txpts),pch=".",col="red",cex=cex,ylab=NA,xlab=NA,main=NA,cex.axis=0.8,xaxt="n",las=3,mgp=c(2,0.1,0),tck=1,bty="n"),
               debug = getOption("oceDebug"))
   }
-}                                       #totalreads
+}                                       # totaltxpts
 
 #plot complexity (number of unique genes detected) per cell
-cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")) {
+cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
   cex <- 0.6
   if ( ! plotmethod %in% c("hist","cumulative","combo") ) stop("invalid plotting method")
-
-  complexity<-apply(rmspike(data),2,function(x) sum(x>=1))
 
   if(plotmethod == "hist"){
     a<-hist(complexity,breaks=100,xlab="total genes",ylab="frequency",main="unique genes detected/well",col="steelblue1",xaxt="n") 
@@ -222,7 +223,7 @@ cellgenes<-function(data,plotmethod=c("hist","cumulative","combo")) {
     ## a<-hist(complexity,breaks=100,ylab="frequency",main="complexity",xlab="unique genes/cell",col="steelblue1",xaxt="n")
     d <- density(complexity, adjust=0.5)
     xlim <- c(0, max(complexity))
-    plot(d,ylab="density",main="complexity",xlab="unique genes/cell",xlim=xlim, col="steelblue1", yaxt="n")
+    plot(d,ylab="density",main="complexity",xlab="unique genes/cell",xlim=xlim, col="blue", yaxt="n")
     rug(complexity, ticksize= 0.02)
     mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
     ### axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
@@ -315,17 +316,12 @@ testcutoff<-function(data,n,pdf=FALSE){
   y[1] <- 16 - (y[1]-0.45) + 1
   y[2] <- 16 - (y[2]+0.45) + 1
   rect(xleft=x[1],xright=x[2], ybottom=y[1],ytop=y[2], col=NA, border="grey")
-}
+}                                       #.plot.grid
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
-plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
+plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, mtext=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
-  genes <- rmspike(data)
-  gene.total<-colSums(genes) # sum of unique reads after removing spike ins
-  spike.total<-colSums(keepspike(data))
-  complexity<-apply(genes,2,function(x)sum(x>=1))
-  rawreads.total <- colSums(rmspike(rawreads))
 
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
@@ -334,90 +330,27 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
   mar[1] <- mar[1]*1.3                  #to get right aspect ratio for the plates
   mar[3] <- mar[3]*1.3
   par(mar=mar, xpd=TRUE)
+  scale.top <- -2.5
+  scale.bot <- -3.5
 
-  scale.top <- -2.5; scale.bot <- -3.5
-
+  if(is.null(data)) { 
+    .empty.plot(main=main, msg="no data")
+    par(mar=save.mar, xpd=FALSE)
+    return()
+  }
   coordinates <- expand.grid(seq(1,24),rev(seq(1,16)))
-
-  if(is.null(rawreads))
-    .empty.plot(main="% raw gene reads", msg="stats not given")
-  else {
-    .plot.grid(main="raw gene reads",emptywells=emptywells)
-    l <- log10(rawreads.total)
-    infinite <- is.infinite(l)
-    l[infinite] <- NA
-    col <- colorize(x=l, counts.palette, na.col='white')
-    from <- floor(min(l, na.rm=TRUE))
-    to <- ceiling(max(l, na.rm=TRUE))
-    ticks <- from:to
-    points(coordinates,pch=19,col=col, cex=cex.wells)
-    points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-    draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
-                     col=counts.palette, main="log10")
-  }
-
-  if(is.null(welltotals))
-    .empty.plot(main="% mapped gene reads", msg="stats not given")
-  else { 
-    .plot.grid(main="% mapped gene reads", emptywells=emptywells)
-    perc <- with(welltotals, 100*(mapped/(mapped+unmapped)))
-    col <- colorize(perc, counts.palette, na.col='white')
-
-    ticks <- seq(0,100,10)
-    points(coordinates,pch=19,col=col, cex=cex.wells)
-    ## mtext(sprintf(">1500 unique reads: %.0f%%",sum(colSums(data)>1500)/384*100),col="red",cex=cex)
-    draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
-                     col=counts.palette, main="%")
-  }
-
-  .plot.grid(main="gene txpts",emptywells=emptywells)
-  l <- log10(gene.total)
-  infinite <- is.infinite(l)
-  l[infinite] <- NA
-  col <- colorize(x=l, counts.palette, na.col='white')
-  ticks <- 0:5
+  .plot.grid(main=main,emptywells=emptywells)
+  infinite <- is.infinite(data) | is.nan(data)
+  data[infinite] <- NA
+  col <- colorize(x=data, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
   points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-  mtext(sprintf(">=1000 unique txpts: %.0f%%",sum(colSums(genes)>=1000)/384*100),col="red",cex=cex)
-  draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
-                   col=counts.palette, main="log10")
-
-  .plot.grid(main="complexity",emptywells=emptywells)
-  l <- log10(complexity)
-  infinite <- is.infinite(l)
-  l[infinite] <- NA
-  col <- colorize(x=l, counts.palette, na.col='white')
-  ticks <- 0:4
-  points(coordinates,pch=19,col=col, cex=cex.wells)
-  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-  mtext(sprintf(">=1000 unique genes: %.0f%%",sum(complexity>=1000)/384*100),col="red",cex=cex)
-  draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
-                   col=counts.palette, main="log10")
-
-  .plot.grid(main="ERCC txpts",emptywells=emptywells)
-  l <- log10(spike.total)
-  infinite <- is.infinite(l)
-  l[infinite] <- NA
-  col <- colorize(x=l, counts.palette, na.col='white')
-  ticks <- -1:4
-  points(coordinates,pch=19,col=col, cex=cex.wells)
-  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-  mtext(sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100),col="red",cex=cex)
-  draw.color.scale(xleft=1, xright=24, ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
-                   col=counts.palette, main="log10")
-  
-  .plot.grid(main="ratio ERCCs/genes", emptywells=emptywells)
-  l <- log2(spike.total/gene.total)
-  infinite <- is.infinite(l) | is.nan(l)
-  l[infinite] <- NA
-  col <- colorize(x=l, counts.palette, na.col='white')
-  points(coordinates,pch=19,col=col, cex=cex.wells)
-  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-  mtext(sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
-                   col=counts.palette, main="log2")
+                   col=counts.palette, main=scale.name)
+  if(!is.null(mtext))
+    mtext(text=mtext,col="red",cex=cex)
   par(mar=save.mar, xpd=FALSE)
-}                                       # plate.plots
+}                                       # plate.plot
 
 # plot the top 20 genes with expression bar and then barplot their index of dispersion
 topgenes<-function(data){
