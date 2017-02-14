@@ -121,13 +121,12 @@ for(i in 1:length(tc)){
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
   infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
   totalreads(tc[[i]],plotmethod = "hist", emptywells=emptywells) # total txpts/cell
-  cellgenes(tc[[i]],plotmethod= "cumulative") # plot number of detected genes/cell, can choose 4 different plot methods
-  overseq2(rc[[i]],bc[[i]]) # plot oversequencing per molecule
   wells.mapped <- apply(genes,2,sum)
   wells.unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes!!
   plate.plots(data=tc[[i]],
               welltotals=list(mapped=wells.mapped, unmapped=wells.unmapped),
-              emptywells=emptywells) # 4 plots: perc. mapped; total reads, ERCC reads and division between the two over a plate layout
+              emptywells=emptywells,
+              rawreads=rc[[i]])
   coverage.plot(data=genesseen[[i]], type='genes')
   coverage.plot(data=genesseen[[i]], type='umis')
   coverage.plot(data=genesseen[[i]], type='umis.per.gene')

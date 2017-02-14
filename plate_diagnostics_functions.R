@@ -313,11 +313,13 @@ testcutoff<-function(data,n,pdf=FALSE){
 }
 
 #plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
-plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
+plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
   genes <- rmspike(data)
   gene.total<-colSums(genes) # sum of unique reads after removing spike ins
+  spike.total<-colSums(keepspike(data))
+  rawreads.total <- colSums(rmspike(rawreads))
 
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
@@ -330,6 +332,23 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL) {
   scale.top <- -2.5; scale.bot <- -3.5
 
   coordinates <- expand.grid(seq(1,24),rev(seq(1,16)))
+
+  if(is.null(rawreads))
+    .empty.plot(main="% raw gene reads", msg="stats not given")
+  else {
+    .plot.grid(main="raw gene reads",emptywells=emptywells)
+    l <- log10(rawreads.total)
+    infinite <- is.infinite(l)
+    l[infinite] <- NA
+    col <- colorize(x=l, counts.palette, na.col='white')
+    from <- floor(min(l, na.rm=TRUE))
+    to <- ceiling(max(l, na.rm=TRUE))
+    ticks <- from:to
+    points(coordinates,pch=19,col=col, cex=cex.wells)
+    points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
+    draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
+                     col=counts.palette, main="log10")
+  }
 
   if(is.null(welltotals))
     .empty.plot(main="% mapped gene reads", msg="stats not given")
