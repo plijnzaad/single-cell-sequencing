@@ -324,6 +324,7 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
   genes <- rmspike(data)
   gene.total<-colSums(genes) # sum of unique reads after removing spike ins
   spike.total<-colSums(keepspike(data))
+  complexity<-apply(genes,2,function(x)sum(x>=1))
   rawreads.total <- colSums(rmspike(rawreads))
 
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
@@ -371,10 +372,14 @@ plate.plots<-function(data, welltotals=NULL, emptywells=NULL, rawreads=NULL) {
 
   .plot.grid(main="gene txpts",emptywells=emptywells)
   l <- log10(gene.total); l[!is.finite(l)] <- NA
+  .plot.grid(main="complexity",emptywells=emptywells)
+  l <- log10(complexity)
+  infinite <- is.infinite(l)
+  l[infinite] <- NA
   col <- colorize(x=l, counts.palette, na.col='white')
   ticks <- 0:4 
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  mtext(sprintf(">1000 unique genes: %.0f%%",sum(colSums(genes)>1000)/384*100),col="red",cex=cex)
+  mtext(sprintf(">=1000 unique genes: %.0f%%",sum(complexity>=1000)/384*100),col="red",cex=cex)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2,cex.axis=0.5,
                    col=counts.palette, main="log10")
 
