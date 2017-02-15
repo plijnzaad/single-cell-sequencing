@@ -235,7 +235,7 @@ cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
   }
 }                                       #cellgenes
 
-well.coverage <- function(gene.total) {
+well.coverage <- function(main, gene.total) {
   cex <- 0.6
   max <- ceiling(log10(max(gene.total)))
   ticks <- as.vector(c(1,2,5) %o% 10^(0:max))
@@ -265,21 +265,21 @@ coverage.plot <- function(data, type='genes') {
   if (type=='genes') { 
     with(data,
          plot(main="gene coverage", x=reads, y=genes, xlab="reads seen",ylab="unique genes seen",
-              ylim=c(0, max.ntxpts), type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+              ylim=c(0, max.ntxpts), type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
     return()
   }
 
   if (type=='umis') { 
     with(data,
          plot(main="transcript coverage", x=reads, y=umis, xlab="reads seen",ylab="unique transcripts seen",
-              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
     return()
   }
 
   if (type=='umis.per.gene') { 
     with(data,
          plot(main="mean transcripts/gene", x=reads, y=umis/genes, xlab="reads seen",ylab="unique transcripts/unique gene seen",
-              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1))
+              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
     return()
   }
   stop("Unknown coverage.plot type, only know 'genes', 'umis', 'umis.per.gene'")
