@@ -123,7 +123,7 @@ for(i in 1:length(tc)) {
 
   rawreads.total <- colSums(rmspike(rc[[i]]))
   genes <- rmspike(tc[[i]])
-  gene.total<-colSums(genes) # sum of unique txpts after removing spike ins
+  gene.total <- colSums(genes) # sum of unique txpts after removing spike ins
 
   totaltxpts(gene.total, plotmethod = "hist", emptywells=emptywells) # total txpts/cell
 
@@ -153,7 +153,7 @@ for(i in 1:length(tc)) {
               ticks=0:5,
               scale.name="log10",
               emptywells=emptywells,
-              mtext=sprintf(">=1000 unique txpts: %.0f%%",sum(colSums(genes)>=1000)/384*100))
+              mtext=sprintf(">=1000 unique txpts: %.0f%%",sum(gene.total>=1000)/384*100))
 
   plate.plot(data=log10(complexity), main='complexity',
               ticks=0:4,
@@ -173,6 +173,7 @@ for(i in 1:length(tc)) {
               emptywells=emptywells,
               mtext=sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
 
+  well.coverage(main="txpt coverage per non-empty well", gene.total[-emptywells])
   coverage.plot(data=genesseen[[i]], type='genes')
   coverage.plot(data=genesseen[[i]], type='umis')
   coverage.plot(data=genesseen[[i]], type='umis.per.gene')

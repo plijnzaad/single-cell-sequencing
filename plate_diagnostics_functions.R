@@ -235,12 +235,31 @@ cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
   }
 }                                       #cellgenes
 
+well.coverage <- function(gene.total) {
+  cex <- 0.6
+  max <- ceiling(log10(max(gene.total)))
+  ticks <- as.vector(c(1,2,5) %o% 10^(0:max))
+  ticks <- ticks[ticks<max(gene.total)]
+  freq <- sapply(ticks, function(cnt)sum(gene.total >= cnt))
+  xlim <- log10(range(ticks))
+  ylim <- c(0, 400)
+  plot(pch=19, cex=0.5,main="txpt coverage per well", x=log10(ticks), y=freq, type="b", tck=1, col="red",
+       lwd=2 ,axes=FALSE, xlab="N", ylab="wells with >= N transcripts",
+       xlim=xlim, ylim=ylim, xaxs="i", yaxs="i")
+  axis(1, at=log10(ticks), labels=sprintf("%s",commafy(ticks)),las=3, cex.axis=cex, tck=0, pos=min(ylim))
+  axis(2, at=seq(0,400,by=50), labels=TRUE, cex.axis=cex, tck=0, las=1, pos=min(xlim))
+  abline(h=seq(0,400,by=50), v=log10(ticks), col="grey")
+  axis(4, at=seq(0,384,length.out=11), labels=paste0(seq(0, 100,length.out=11), '%'), cex.axis=cex,
+       tck= -0.01, las=1, pos=max(xlim))
+  mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="red", cex=cex)
+}                                       #well.coverage
+
 coverage.plot <- function(data, type='genes') {       
   if (is.null(data)) {
     .empty.plot(main="coverage", msg="no data")
     return()
   }
-  max.ntxpts <- 25000                     # or new argument transcriptome.size?
+  max.ntxpts <- 25000                     # or use some argument transcriptome.size?
   cex <- 0.6
   
   if (type=='genes') { 
@@ -294,7 +313,7 @@ testcutoff<-function(data,n,pdf=FALSE){
     plot(apply(rc.cutoff,2,sum),ylab = "number of transcripts",col="black",
     xlab = "cutoff (mean transcript no.)",main=main,type="b",lty=2,pch=19)
   }    
-}
+}                                       #testcutoff
 
 .empty.plot <- function(main, msg) {
   plot(type="n", x=c(0,1), y=c(0,1), main=main, axes=FALSE,xlab="",ylab="")
