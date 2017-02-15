@@ -124,7 +124,7 @@ infobox <- function(script, dir, filename,totals) {
     paste0("dir: ", dir),
     paste0("file: ", filename),
     sprintf("refgenes found: %d", totals['ngenes']),
-    sprintf("ECCS found: %d", totals['nspikes']),
+    sprintf("ERCCs found: %d", totals['nspikes']),
     sprintf("total reads with CBC*: %s\n\t mapped: %s (%.1f %%) ",
             commafy(totreads), commafy(valid), 100*valid/totreads),
     paste0("total umis: ",  commafy(totals['umis'])),
@@ -254,36 +254,20 @@ well.coverage <- function(main, gene.total) {
   mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="red", cex=cex)
 }                                       #well.coverage
 
-coverage.plot <- function(data, type='genes') {       
-  if (is.null(data)) {
+
+saturation.plot <- function(main, x, y, xlab,ylab, ...) { 
+  ## browser()
+  if (is.null(x) || length(x)==0) {
     .empty.plot(main="coverage", msg="no data")
     return()
   }
-  max.ntxpts <- 25000                     # or use some argument transcriptome.size?
   cex <- 0.6
-  
-  if (type=='genes') { 
-    with(data,
-         plot(main="gene coverage", x=reads, y=genes, xlab="reads seen",ylab="unique genes seen",
-              ylim=c(0, max.ntxpts), type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
-    return()
-  }
 
-  if (type=='umis') { 
-    with(data,
-         plot(main="transcript coverage", x=reads, y=umis, xlab="reads seen",ylab="unique transcripts seen",
-              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
-    return()
-  }
+  plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
+       type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i")
+  return()
+}                                       # saturation plot
 
-  if (type=='umis.per.gene') { 
-    with(data,
-         plot(main="mean transcripts/gene", x=reads, y=umis/genes, xlab="reads seen",ylab="unique transcripts/unique gene seen",
-              type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i"))
-    return()
-  }
-  stop("Unknown coverage.plot type, only know 'genes', 'umis', 'umis.per.gene'")
-}                                       #coverage.plot
 
 #plot ERCC reads
 plotspike<-function(data){
@@ -619,3 +603,4 @@ read.stats <- function(file) {
 # mode: R
 # ess-indent-level: 2
 # End:
+

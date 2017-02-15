@@ -78,7 +78,7 @@ for(i in 1:length(files)){
   bc[[i]] <- read.counts(file=umi.file)
   tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
-  genesseen.file <- paste0(names[[i]], "-genesseen.txt")
+  genesseen.file <- paste0(names[[i]], "-occurrences.txt")
   if(file.exists(genesseen.file)) {
     tab <- read.table(file=genesseen.file, sep="\t",
                                  as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
@@ -174,9 +174,18 @@ for(i in 1:length(tc)) {
               mtext=sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
 
   well.coverage(main="txpt coverage per non-empty well", gene.total[-emptywells])
-  coverage.plot(data=genesseen[[i]], type='genes')
-  coverage.plot(data=genesseen[[i]], type='umis')
-  coverage.plot(data=genesseen[[i]], type='umis.per.gene')
+
+  with(genesseen[[i]], 
+       saturation.plot(main="gene coverage",x=reads, y=genes,
+                       xlab="reads seen", ylab="unique genes seen", ylim=c(0, 25000)))
+
+  with(genesseen[[i]], 
+       saturation.plot(main="transcript coverage", x=reads, y=umis,
+                       xlab="reads seen",ylab="unique transcripts seen"))
+  with(genesseen[[i]],
+       saturation.plot(main="mean transcripts/gene", x=reads, y=umis/genes,
+                       xlab="reads seen",ylab="unique transcripts/unique gene seen"))
+
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(data=tc[[i]], emptywells=emptywells)
