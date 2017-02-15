@@ -323,6 +323,13 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, mtext=NULL)
   cex <- 0.6
   cex.wells <- 1.1
 
+  ## separate palette for ratios:
+  ## use 3-color scale for ratios, but middle must correspond to '0':
+  ## low <- "#313695";mid="#FFFFBF"; high="#A50026"   ## same as RdYlBu
+  ## low <- "cyan";mid="black"; high="yellow"   ## same as RdYlBu
+  ## ticks <- -10:2
+  ## ratio.palette <- c(colorRampPalette(c(low,mid))(100), colorRampPalette(c(mid,high))(31))
+  
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
   mar <- par()$mar
