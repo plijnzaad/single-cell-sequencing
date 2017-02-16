@@ -215,15 +215,15 @@ cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
   }
 
   if(plotmethod == "cumulative"){
-    plot(ecdf(complexity),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/cell",main="cumul. complexity",cex.axis=1,las=1,tck=1)
+    plot(ecdf(complexity),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/well",main="cumul. complexity",cex.axis=1,las=1,tck=1)
     mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
   }
 
   if(plotmethod == "combo"){
-    ## a<-hist(complexity,breaks=100,ylab="frequency",main="complexity",xlab="unique genes/cell",col="steelblue1",xaxt="n")
+    ## a<-hist(complexity,breaks=100,ylab="frequency",main="complexity",xlab="unique genes/well",col="steelblue1",xaxt="n")
     d <- density(complexity, adjust=0.5)
     xlim <- c(0, max(complexity))
-    plot(d,ylab="density",main="complexity",xlab="unique genes/cell",xlim=xlim, col="blue", yaxt="n")
+    plot(d,ylab="density",main="complexity",xlab="unique genes/well",xlim=xlim, col="blue", yaxt="n")
     rug(complexity, ticksize= 0.02)
     mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
     ### axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
@@ -337,7 +337,7 @@ testcutoff<-function(data,n,pdf=FALSE){
   rect(xleft=x[1],xright=x[2], ybottom=y[1],ytop=y[2], col=NA, border="grey")
 }                                       #.plot.grid
 
-#plot number of total reads, ERCC-reads and genes/cell over a 384-well plate layout
+#plot number of total reads, ERCC-reads and genes/well over a 384-well plate layout
 plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, mtext=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
@@ -462,7 +462,7 @@ leakygenes<-function(data, emptywells) {
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
     warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", names[[i]], n, length(emptywells)))
-  ## plot genes/cell and ERCC reads/cell for empty wells
+  ## plot genes/well and ERCC reads/well for empty wells
   par(mar = c(5, 4, 6, 1))
   barplot(t(empties),main="transcripts in empty wells",
           col=c("blue","red"),space=rep(c(5/nrow(empties),0),nrow(empties)),cex.names = 0.5,las=3,beside=TRUE,
