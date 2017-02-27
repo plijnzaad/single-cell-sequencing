@@ -163,7 +163,7 @@ totaltxpts <- function(txpts,plotmethod=c("barplot","hist","cumulative","combo")
                       col=col.empty, border=NA, add=TRUE), rest.args))
 
       legend(x = "topleft", legend = c("full", sprintf("empty x %d", magnif.empty)),
-                              fill = c(col.full, col.empty), bty="n", cex=cex)
+             fill = c(col.full, col.empty), bty="n", cex=cex)
     }
     axis(1, at=ticks,labels=sprintf("%s",commafy(round(10^ticks))),las=3, cex.axis=cex)
     mn <- mean(txpts)
@@ -254,8 +254,67 @@ well.coverage <- function(main, gene.total) {
   mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="red", cex=cex)
 }                                       #well.coverage
 
+## Support for use of Michaelis-Menten for saturation curves comes from e.g. 
+## Pascal de Caprariis, Richard Lindemann, and Robert Haimes
+## Mathematical Geology, Vol. 13, No. 4, 1981
+## "A Relationship Between Sample Size and Accuracy of Species Richness Predictions"
+nop <- function(...)invisible(NULL)
 
-saturation.plot <- function(main, x, y, xlab,ylab, ...) { 
+R.squared <- function(model, y) {
+    RSS <- sum(residuals(model)^2)
+    TSS <- sum((y - mean(y))^2)
+    (1 - (RSS/TSS))
+}
+
+reads.required <- function(K, f)K*f/(1-f) 
+
+format.kMG <- function(x, fmt="%.3e") {
+  ## warning("format.kMG: fix for values < 1!")
+  return(sprintf(fmt,x))
+  ##   stopifnot(all( 1<x  & x < 1e+27))
+  prefixes <- c(" ", "k","M", "G", "T", "P", "E", "Z", "Y")
+  f <- floor(floor(log10(x))/3)
+  prefix <- prefixes[f+1]
+  om <- 10^(3*floor(floor(log10(x))/3))
+  scaled <- x/om
+  sprintf(paste0(fmt," %s"), scaled, prefix) 
+}                                       #format.kMG
+
+fit.details <- function(model,y, pred="") {
+  if(is.null(model))
+    return("(no fit")
+  R2 <- R.squared(model,y)
+  coef <- coef(model)
+  coef.string <- paste(collapse="  ", sep=": ", names(coef), format.kMG(coef))
+
+  extra <- ""
+  if( names(coef)[1]== "Vm") { # Michaelis-Menten
+    f <- 0.9
+    nearing.at <- reads.required(K=coef['K'], f=f)
+    extra <- sprintf("%.1f%% at %s reads", floor(f*100), format.kMG(nearing.at))
+  }
+  
+  sprintf("R2: %.3f %s\n%s\n%s", R2, pred, coef.string, extra)
+} # fit.details
+
+mm.fit <- function(data) {
+  ss <- NULL
+  tryCatch({  ss <- getInitial(y ~ SSmicmen(reads, max(y), 1)) },
+           error=nop,warning=nop,finally=nop)
+  if(is.null(ss))
+    return(NULL)
+  
+  Vm <- ss[1]
+  K <- ss[2]
+
+  model <- NULL
+  tryCatch({ model <- nls(data=data, y~SSmicmen(reads, Vm, K))},
+           error=nop,warning=nop,finally=nop)
+
+  return(model)
+}                                       #mm.fit
+
+saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) { 
   ## browser()
   if (is.null(x) || length(x)==0) {
     .empty.plot(main="coverage", msg="no data")
@@ -264,9 +323,53 @@ saturation.plot <- function(main, x, y, xlab,ylab, ...) {
   cex <- 0.6
 
   plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
-       type="l", lwd=2, col="red", cex.axis=cex, las=2,tck=1, xaxs="i", yaxs="i")
+       type="l", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
+
+  atx <- axTicks(1)
+  aty <- axTicks(2)
+  axis(1, at=atx, labels=FALSE)
+  axis(2, at=aty, labels=FALSE)
+  abline(h=aty, v=atx, col="grey")
+  
+  data <- data.frame(reads=x,y=y)
+
+  model <- mm.fit(data=data)
+
+  if(is.null(model)) { 
+    return()
+  }
+  fitted <- fitted(model)
+  max <- coef(model)['Vm']
+
+  ## legend(x="bottomright", bty='n', lty=1, pch=NA,
+  ##       col=c('black', 'blue', 'red'),
+  ##       legend=c('actual', 'halfdata', 'fulldata'))
+
+  usrx <- 0.60*(max(data$reads))        # to find the bottomright corner
+
+  lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
+  abline(h=max,col="red", lty=2)
+  details <- fit.details(model, data$y, pred='full data')
+  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=0.5*cex, col="red")
+  
+  end2 <- floor(nrow(data)/2)
+  data2 <- data[ 1:end2, ]
+  model2 <- mm.fit(data2)
+
+  if (!is.null(model2)) {
+    fitted2 <- fitted(model2)
+    max2 <- coef(model2)['Vm']
+    lines(x=data2[1:end2,'reads'], y=fitted2, col="blue", lwd=2, lty=2)
+    to.predict <- data[end2:nrow(data),]
+    lines(x=to.predict$reads, y=predict(model2,newdata=to.predict),
+          col="blue", lwd=2, lty=3)
+    abline(h=max,col="blue", lty=2)
+    details <- fit.details(model2, data2$y, pred='half data')
+    mtext(side=1, line= -4, adj=0, at=usrx, text=details, cex=0.5*cex, col="blue")
+  }  
+
   return()
-}                                       # saturation plot
+}                                       # saturation.plot()
 
 
 #plot ERCC reads
@@ -603,4 +706,3 @@ read.stats <- function(file) {
 # mode: R
 # ess-indent-level: 2
 # End:
-

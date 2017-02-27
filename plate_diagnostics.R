@@ -177,11 +177,12 @@ for(i in 1:length(tc)) {
 
   with(genesseen[[i]], 
        saturation.plot(main="gene coverage",x=reads, y=genes,
-                       xlab="reads seen", ylab="unique genes seen", ylim=c(0, 25000)))
+                       xlab="reads seen", ylab="unique genes seen"))
 
   with(genesseen[[i]], 
        saturation.plot(main="transcript coverage", x=reads, y=umis,
                        xlab="reads seen",ylab="unique transcripts seen"))
+
   with(genesseen[[i]],
        saturation.plot(main="mean transcripts/gene", x=reads, y=umis/genes,
                        xlab="reads seen",ylab="unique transcripts/unique gene seen"))
