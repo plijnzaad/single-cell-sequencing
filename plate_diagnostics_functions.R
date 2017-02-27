@@ -294,13 +294,15 @@ fit.details <- function(model,y, pred="") {
     extra <- sprintf("%.1f%% at %s reads", floor(f*100), format.kMG(nearing.at))
   }
   
-  sprintf("R2: %.3f %s\n%s\n%s", R2, pred, coef.string, extra)
+  sprintf("%s: R2: %.3f\n%s\n%s", pred, R2, coef.string, extra)
 } # fit.details
 
 mm.fit <- function(data) {
   ss <- NULL
-  tryCatch({  ss <- getInitial(y ~ SSmicmen(reads, max(y), 1)) },
+
+  tryCatch({ ss <- getInitial(data=data,y ~ SSmicmen(input=reads, Vm=max(y), K=1))},
            error=nop,warning=nop,finally=nop)
+
   if(is.null(ss))
     return(NULL)
   
@@ -310,7 +312,6 @@ mm.fit <- function(data) {
   model <- NULL
   tryCatch({ model <- nls(data=data, y~SSmicmen(reads, Vm, K))},
            error=nop,warning=nop,finally=nop)
-
   return(model)
 }                                       #mm.fit
 
@@ -331,7 +332,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
   axis(2, at=aty, labels=FALSE)
   abline(h=aty, v=atx, col="grey")
   
-  data <- data.frame(reads=x,y=y)
+  data <- data.frame(y=y, reads=x)
 
   model <- mm.fit(data=data)
 
@@ -370,7 +371,6 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
 
   return()
 }                                       # saturation.plot()
-
 
 #plot ERCC reads
 plotspike<-function(data){
