@@ -144,10 +144,15 @@ for(i in 1:length(tc)) {
   mapped <- apply(genes,2,sum)
   unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
   perc <- 100*(mapped/(mapped+unmapped))
+
+  failed <- failedwells(spikes)
+  
   plate.plot(data=perc, main='% mapped gene reads',
-              ticks=seq(0,100,10),
-              scale.name="%",
-              emptywells=emptywells)
+             ticks=seq(0,100,10),
+             scale.name="%",
+             emptywells=emptywells,
+             failedwells=failed
+             )
 
   plate.plot(data=log10(gene.total), main='gene txpts',
               ticks=0:5,

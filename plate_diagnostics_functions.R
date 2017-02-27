@@ -134,6 +134,20 @@ infobox <- function(script, dir, filename,totals) {
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
 }                                       #infobox
 
+failedwells <- function(spikes) {
+  use <- apply(spikes,1,median)>=4
+  absent <- spikes[use,]==0
+  absent <- apply(absent, 2, function(col)sum(col)>= 2)
+  return(names(absent[absent]))
+  ## additional criterion
+  surv <- spikes[use, !absent]
+  mn <- apply(log2(surv), 2, mean)
+  med <- apply(log2(surv), 2, median)
+  ma <- apply(log2(surv), 2, mad)
+  m <- abs(mn - med)> ma
+  union(names(absent[absent]), names(m[m]))
+}                                       #failedwells
+
 #plot total number of transcripts per sample
 totaltxpts <- function(txpts,plotmethod=c("barplot","hist","cumulative","combo"),
                        emptywells=NULL) {
@@ -425,7 +439,8 @@ testcutoff<-function(data,n,pdf=FALSE){
 }                                       #.plot.grid
 
 #plot number of total reads, ERCC-reads and genes/well over a 384-well plate layout
-plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, mtext=NULL) {
+plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL,
+                     mtext=NULL, failedwells=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
 
@@ -452,12 +467,15 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, mtext=NULL)
     return()
   }
   coordinates <- expand.grid(seq(1,24),rev(seq(1,16)))
+  rownames(coordinates) <- as.vector(wellname())
   .plot.grid(main=main,emptywells=emptywells)
   infinite <- is.infinite(data) | is.nan(data)
   data[infinite] <- NA
   col <- colorize(x=data, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
   points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
+  if(!is.null(failedwells))
+    points(coordinates[failedwells,],pch=1, cex=cex.wells*1.1,col='black', lwd=0.2)
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main=scale.name)
   if(!is.null(mtext))
