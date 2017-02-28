@@ -439,8 +439,8 @@ testcutoff<-function(data,n,pdf=FALSE){
 }                                       #.plot.grid
 
 #plot number of total reads, ERCC-reads and genes/well over a 384-well plate layout
-plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL,
-                     mtext=NULL, failedwells=NULL) {
+plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL,
+                     mtext=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
 
@@ -450,6 +450,14 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL,
   ## low <- "cyan";mid="black"; high="yellow"   ## same as RdYlBu
   ## ticks <- -10:2
   ## ratio.palette <- c(colorRampPalette(c(low,mid))(100), colorRampPalette(c(mid,high))(31))
+
+  if(!is.null(hilite)) {
+    stopifnot(is.logical(hilite)&&length(hilite)==384)
+    if(is.null(mtext))
+      stop("Need mtext to explain/quantify the hilites")
+    tot <- sum(hilite)
+    mtext <- sprintf("%s: %d wells (%.0f%%)", mtext, tot, tot/384*100)
+  }
   
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
@@ -474,10 +482,13 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL,
   col <- colorize(x=data, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
   points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
-  if(!is.null(failedwells))
-    points(coordinates[failedwells,],pch=1, cex=cex.wells*1.1,col='black', lwd=0.2)
+
+  if(!is.null(hilite))
+    points(coordinates[hilite,],pch=1, cex=cex.wells*1.1,col='red', lwd=0.3)
+
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main=scale.name)
+
   if(!is.null(mtext))
     mtext(text=mtext,col="red",cex=cex)
   par(mar=save.mar, xpd=FALSE)

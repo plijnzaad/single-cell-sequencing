@@ -118,7 +118,9 @@ for(i in 1:length(tc)) {
     par(mfrow = c(4,3)) # specify grid for plots on the pdf
   }
   
-  totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid, unmapped=unname(st["unmapped"]), umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
+  totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid,
+              unmapped=unname(st["unmapped"]),
+              umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
   infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
 
   rawreads.total <- colSums(rmspike(rc[[i]]))
@@ -145,39 +147,45 @@ for(i in 1:length(tc)) {
   unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
   perc <- 100*(mapped/(mapped+unmapped))
 
-  failed <- failedwells(spikes)
+  failed <- failedwells(spikes)         #names, not logical idx
   
   plate.plot(data=perc, main='% mapped raw gene reads',
              ticks=seq(0,100,10),
              scale.name="%",
-             emptywells=emptywells,
-             failedwells=failed
+             emptywells=emptywells
+             ## failedwells=failed
              )
 
   plate.plot(data=log10(gene.total), main='gene txpts',
               ticks=0:5,
               scale.name="log10",
               emptywells=emptywells,
-              mtext=sprintf(">=1000 unique txpts: %.0f%%",sum(gene.total>=1000)/384*100))
+              hilite=(gene.total>=1000),
+              mtext=">=1000 unique txpts")
 
   plate.plot(data=log10(complexity), main='complexity',
               ticks=0:4,
               scale.name="log10",
               emptywells=emptywells,
-              mtext=sprintf(">=1000 unique genes: %.0f%%",sum(complexity>=1000)/384*100))
+              hilite=complexity>=1000,
+              mtext=">=1000 unique genes")
 
   plate.plot(data=log10(spike.total), main='ERCC txpts',
               ticks=-1:4,
               scale.name="log10",
               emptywells=emptywells,
-              mtext=sprintf(">100 ERCCs : %.0f%%",sum(spike.total>100)/384*100))
+              hilite=spike.total>100,
+              mtext=">100 ERCCs")
 
+  hilite <- (spike.total/gene.total>0.05)
+  hilite[is.na(hilite)] <- FALSE
   plate.plot(data=log2(spike.total/gene.total), main='ratio ERCC/gene txpts',
               ticks=-4:4,
               scale.name="log2",
               emptywells=emptywells,
-              mtext=sprintf("ERCC/gene > 0.05: %.0f%% )",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
-
+              hilite=hilite,
+              mtext="ERCC/gene > 0.05")
+  
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
 
   with(genesseen[[i]], 
