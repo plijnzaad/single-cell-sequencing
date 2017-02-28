@@ -125,10 +125,10 @@ infobox <- function(script, dir, filename,totals) {
     paste0("file: ", filename),
     sprintf("refgenes found: %d", totals['ngenes']),
     sprintf("ERCCs found: %d", totals['nspikes']),
-    sprintf("total reads with CBC*: %s\n\t mapped: %s (%.1f %%) ",
+    sprintf("total reads with CBC: %s\n\t mapped: %s (%.1f %%) ",
             commafy(totreads), commafy(valid), 100*valid/totreads),
-    paste0("total umis: ",  commafy(totals['umis'])),
-    paste0("total txpts: ",  commafy(totals['txpts']))
+    paste0("total umis (mapped, valid CBC): ",  commafy(totals['umis'])),
+    paste0("total txpts(mapped, valid CBC): ",  commafy(totals['txpts']))
     )
 
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
@@ -598,8 +598,10 @@ leakygenes<-function(data, emptywells) {
   } 
   overlap<-top.empty[o] # check overlap between top 50 empty and 200 in plate
   non.overlap<-top.empty[ !o ]
-  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6, main="top 10 of overlap between \n top50-empty and top200-all",
-             sub="leakage to empty in %", xlab="log2(sum(reads in empty))",horiz=TRUE)
+  b<-barplot(log2(rev(overlap[1:10])),las=1,cex.names = 0.6,
+             main="top 10 of overlap between \n top50-empty and top200-all",
+             sub="leakage to empty in %",
+             xlab="log2(sum(txpts in empty))",horiz=TRUE)
   text(0.5,b, round((top.empty[names(overlap)[1:10] ]/top.all[names(overlap)[1:10] ])*100,2))
   if (length(overlap)==50)
     warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))

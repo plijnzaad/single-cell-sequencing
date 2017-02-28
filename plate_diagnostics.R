@@ -136,7 +136,7 @@ for(i in 1:length(tc)) {
   to <- ceiling(max(logdata))
   ticks <- from:to
   plate.plot(data=logdata,
-              main='raw gene reads',
+              main='mapped raw gene reads',
               ticks=ticks,
               scale.name="log10",
               emptywells=emptywells)
@@ -147,7 +147,7 @@ for(i in 1:length(tc)) {
 
   failed <- failedwells(spikes)
   
-  plate.plot(data=perc, main='% mapped gene reads',
+  plate.plot(data=perc, main='% mapped raw gene reads',
              ticks=seq(0,100,10),
              scale.name="%",
              emptywells=emptywells,
@@ -176,20 +176,20 @@ for(i in 1:length(tc)) {
               ticks=-4:4,
               scale.name="log2",
               emptywells=emptywells,
-              mtext=sprintf(">ERCC/gene > 0.05: %.0f%% (non-empty only)",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
+              mtext=sprintf("ERCC/gene > 0.05: %.0f%% )",sum(na.rm=TRUE, (spike.total/gene.total)>0.05)/384*100))
 
-  well.coverage(main="txpt coverage per non-empty well", gene.total[-emptywells])
+  well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
 
   with(genesseen[[i]], 
-       saturation.plot(main="gene coverage",x=reads, y=genes,
+       saturation.plot(main="gene saturation",x=reads, y=genes,
                        xlab="reads seen", ylab="unique genes seen"))
 
   with(genesseen[[i]], 
-       saturation.plot(main="transcript coverage", x=reads, y=umis,
+       saturation.plot(main="transcript saturation", x=reads, y=umis,
                        xlab="reads seen",ylab="unique transcripts seen"))
 
   with(genesseen[[i]],
-       saturation.plot(main="mean transcripts/gene", x=reads, y=umis/genes,
+       saturation.plot(main="saturation of mean transcripts/gene", x=reads, y=umis/genes,
                        xlab="reads seen",ylab="unique transcripts/unique gene seen"))
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
