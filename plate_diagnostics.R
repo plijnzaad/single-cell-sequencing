@@ -78,7 +78,7 @@ for(i in 1:length(files)){
   bc[[i]] <- read.counts(file=umi.file)
   tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
-  genesseen.file <- paste0(names[[i]], "-occurrences.txt")
+  genesseen.file <- paste0(names[[i]], "-saturation.txt")
   if(file.exists(genesseen.file)) {
     tab <- read.table(file=genesseen.file, sep="\t",
                                  as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
