@@ -82,7 +82,7 @@ for(i in 1:length(files)){
   if(file.exists(genesseen.file)) {
     tab <- read.table(file=genesseen.file, sep="\t",
                                  as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
-    expected.cols <- c("reads", "genes", "umis") # first few columns, ignore the rest
+    expected.cols <- c("reads", "nmapped", "genes", "umis", "txpts") # first few columns, ignore the rest
     ## if(ncol(tab)!= length(expected.cols))
     ##  stop("File ", genesseen.file ," does not have 6 columns ", paste(expected.cols, sep=" "))
     colnames(tab)[1:length(expected.cols)] <- expected.cols
@@ -188,16 +188,17 @@ for(i in 1:length(tc)) {
   
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
 
+  ## saturation plots. @check: is txpts correct?
   with(genesseen[[i]], 
-       saturation.plot(main="gene saturation",x=reads, y=genes,
+       saturation.plot(main="gene saturation",x=nmapped, y=genes,
                        xlab="reads seen", ylab="unique genes seen"))
 
   with(genesseen[[i]], 
-       saturation.plot(main="transcript saturation", x=reads, y=umis,
+       saturation.plot(main="txpt saturation", x=nmapped, y=txpts,
                        xlab="reads seen",ylab="unique transcripts seen"))
 
   with(genesseen[[i]],
-       saturation.plot(main="saturation of mean transcripts/gene", x=reads, y=umis/genes,
+       saturation.plot(main="saturation of mean transcripts/gene", x=nmapped, y=txpts/genes,
                        xlab="reads seen",ylab="unique transcripts/unique gene seen"))
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
