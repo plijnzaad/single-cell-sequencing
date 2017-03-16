@@ -185,12 +185,54 @@ for(i in 1:length(tc)) {
                        xlab="mapped reads seen", ylab="unique genes seen"))
 
   with(saturations[[i]]$all, 
+       saturation.plot(main="umi saturation", x=nmapped, y=umis,
+                       xlab="mapped reads seen", ylab="unique umis seen"))
+
+  with(saturations[[i]]$all, 
        saturation.plot(main="txpt saturation", x=nmapped, y=txpts,
                        xlab="mapped reads seen", ylab="unique transcripts seen"))
 
   with(saturations[[i]]$all,
+       saturation.plot(main="saturation of mean umis/gene", x=nmapped, y=umis/genes,
+                       xlab="mapped reads seen", ylab="unique umis/unique gene seen"))
+
+  with(saturations[[i]]$all,
        saturation.plot(main="saturation of mean transcripts/gene", x=nmapped, y=txpts/genes,
                        xlab="mapped reads seen", ylab="unique transcripts/unique gene seen"))
+
+  ## ---- wellwise ----
+  
+  ## genes, mean based:
+  with(saturations[[i]]$wellwise_genes_mean,
+       saturation.plot(main="mean gene saturation per well", x=nmapped, y=genes_mean,
+                       xlab="mapped reads seen", ylab="genes per well"))
+
+  ## genes, median based:
+  with(saturations[[i]]$wellwise_genes_median,
+       saturation.plot(main="median gene saturation per well", x=nmapped, y=genes_median,
+                       xlab="mapped reads seen", ylab="genes per well"))
+
+  ## umis, mean based:
+  with(saturations[[i]]$wellwise_umis_mean,
+       saturation.plot(main="mean umi saturation per well", x=nmapped, y=umis_mean,
+                       xlab="mapped reads seen", ylab="umis per well"))
+
+  ## umis, median based:
+  with(saturations[[i]]$wellwise_umis_median,
+       saturation.plot(main="median umi saturation per well", x=nmapped, y=umis_median,
+                       xlab="mapped reads seen", ylab="genes per well"))
+  
+  ## u/g, mean based:
+  u.per.g <- with(saturations[[i]], wellwise_umis_mean$umis_mean/wellwise_genes_mean$genes_mean)
+  with(saturations[[i]]$wellwise_umis_mean,
+       saturation.plot(main="saturation of mean umis/gene", x=nmapped, y=u.per.g,
+                       xlab="mapped reads seen", ylab="unique umis/unique gene seen"))
+
+  ## u/g, median based:
+  u.per.g <- with(saturations[[i]], wellwise_umis_median$umis_median/wellwise_genes_median$genes_median)
+  with(saturations[[i]]$wellwise_umis_median,
+       saturation.plot(main="saturation of median umi/gene", x=nmapped, y=umis_median,
+                       xlab="mapped reads seen", ylab="umis per well"))
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes

@@ -365,7 +365,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
   lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
   abline(h=max,col="red", lty=2)
   details <- fit.details(model, data$y, pred='full data')
-  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=0.5*cex, col="red")
+  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
   
   end2 <- floor(nrow(data)/2)
   data2 <- data[ 1:end2, ]
@@ -380,7 +380,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
           col="blue", lwd=2, lty=3)
     abline(h=max,col="blue", lty=2)
     details <- fit.details(model2, data2$y, pred='half data')
-    mtext(side=1, line= -4, adj=0, at=usrx, text=details, cex=0.5*cex, col="blue")
+    mtext(side=1, line= -4, adj=0, at=usrx, text=details, cex=cex, col="blue")
   }  
 
   return()
@@ -732,24 +732,56 @@ read.stats <- function(file) {
   x
 }                                       #read.stats
 
+read.wellwise.saturation <- function(file) {
+  if(! file.exists(file)) {
+    warning("No wellwise saturation file found (expected ", file, ")")
+    return(NULL)
+  }
+
+  tab <- read.table(file=file, sep="\t",
+                    as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
+  names(tab)[1] <- gsub("^(X\\.)?n?", "",names(tab)[1])
+  if( !setequal(colnames(tab), c("reads", as.vector(wellname())))) {
+    warning("wrong column names; expected 'nreads \\t A1 \\t A2 ... \\t P24")
+    return(NULL)
+  }
+  tab
+}                                       #read.wellwise.saturation
+
 read.saturations <- function(name) {
   file <- paste0(name, "-saturation.txt")
-
-  sats <- list()
   
   if(! file.exists(file)) {
     warning("No saturation files found (expected ", file, ")")
     return(NULL)
   }
     
-  tab <- read.table(file=file, sep="\t",
+  all <- read.table(file=file, sep="\t",
                     as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
-  names(tab)[1] <- gsub("^X\\.n?", "",names(tab)[1])
+  names(all)[1] <- gsub("^X\\.n?", "",names(all)[1])
   expected.cols <- c("reads", "nmapped", "nvalid", "genes", "umis", "txpts")
-  missing <- setdiff(expected.cols, colnames(tab))
+  missing <- setdiff(expected.cols, colnames(all))
   if (length(missing)>0)
-    stop("Columns missing from ", file, ": ", paste(missing))
-  sats$all <- tab
+    stop("Columns missing from ", file, ": ", paste(missing,collapse=" "))
+
+  sats <- list()
+
+  sats$all <- all
+
+  for (type in c('genes', 'umis')) { 
+    file <- sprintf("%s-wellsat-%s.txt", name, type)
+    tab <- read.wellwise.saturation(file)
+    if(is.null(tab))
+      return(NULL)
+    m <- merge(all, tab,by='reads')
+    sats[[ paste(type, "perwell", sep="_") ]] <- m
+
+    for (func in c("mean", "median", "max")) {
+      aggr <- cbind(tab[,1], apply(tab[,-1], 1, func))
+      colnames(aggr) <- c("reads", paste(type, func, sep="_"))
+      sats[[ paste("wellwise", type, func, sep="_") ]] <- merge(all, aggr, by='reads')
+    }
+  }
 
   sats
 }                                       #read.saturations
