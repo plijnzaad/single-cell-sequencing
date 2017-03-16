@@ -732,6 +732,27 @@ read.stats <- function(file) {
   x
 }                                       #read.stats
 
+read.saturations <- function(name) {
+  file <- paste0(name, "-saturation.txt")
+
+  sats <- list()
+  
+  if(! file.exists(file)) {
+    warning("No saturation files found (expected ", file, ")")
+    return(NULL)
+  }
+    
+  tab <- read.table(file=file, sep="\t",
+                    as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
+  names(tab)[1] <- gsub("^X\\.n?", "",names(tab)[1])
+  expected.cols <- c("reads", "nmapped", "nvalid", "genes", "umis", "txpts")
+  missing <- setdiff(expected.cols, colnames(tab))
+  if (length(missing)>0)
+    stop("Columns missing from ", file, ": ", paste(missing))
+  sats$all <- tab
+
+  sats
+}                                       #read.saturations
 
 # Local variables:
 # mode: R

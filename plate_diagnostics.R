@@ -48,7 +48,7 @@ split_files<-list() # for  full names of the plates without .cout* extension
 rc<-list() # list of .coutc files (raw reads)
 bc<-list() # list of .coutb files (umis)
 tc<-list() # list of .coutt files (transcripts)
-genesseen <- list() # table with number of SAM lines, and number of different genes seen so far
+saturations <- list() # table with number of SAM lines, and number of different genes seen so far
 stats<-list() # list of stats (written as comment on top to the *.coutt.csv file)
 
 #### OPTIONAL: Merge CS1-type libraries into one 384-column long CS2-type file####
@@ -78,16 +78,7 @@ for(i in 1:length(files)){
   bc[[i]] <- read.counts(file=umi.file)
   tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
-  genesseen.file <- paste0(names[[i]], "-saturation.txt")
-  if(file.exists(genesseen.file)) {
-    tab <- read.table(file=genesseen.file, sep="\t",
-                                 as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
-    expected.cols <- c("reads", "nmapped", "genes", "umis", "txpts") # first few columns, ignore the rest
-    ## if(ncol(tab)!= length(expected.cols))
-    ##  stop("File ", genesseen.file ," does not have 6 columns ", paste(expected.cols, sep=" "))
-    colnames(tab)[1:length(expected.cols)] <- expected.cols
-    genesseen[[i]] <- tab
-  }
+  saturations[[i]] <- read.saturations(names[[i]])
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
 }
 
@@ -147,7 +138,7 @@ for(i in 1:length(tc)) {
   unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
   perc <- 100*(mapped/(mapped+unmapped))
 
-  failed <- failedwells(spikes)         #names, not logical idx
+  failed <- failedwells(spikes)         #names, not logical idx!
   
   plate.plot(data=perc, main='% mapped raw gene reads',
              ticks=seq(0,100,10),
@@ -188,18 +179,18 @@ for(i in 1:length(tc)) {
   
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
 
-  ## saturation plots. @check: is txpts correct?
-  with(genesseen[[i]], 
+  ## saturation plots
+  with(saturations[[i]]$all, 
        saturation.plot(main="gene saturation",x=nmapped, y=genes,
-                       xlab="reads seen", ylab="unique genes seen"))
+                       xlab="mapped reads seen", ylab="unique genes seen"))
 
-  with(genesseen[[i]], 
+  with(saturations[[i]]$all, 
        saturation.plot(main="txpt saturation", x=nmapped, y=txpts,
-                       xlab="reads seen",ylab="unique transcripts seen"))
+                       xlab="mapped reads seen", ylab="unique transcripts seen"))
 
-  with(genesseen[[i]],
+  with(saturations[[i]]$all,
        saturation.plot(main="saturation of mean transcripts/gene", x=nmapped, y=txpts/genes,
-                       xlab="reads seen",ylab="unique transcripts/unique gene seen"))
+                       xlab="mapped reads seen", ylab="unique transcripts/unique gene seen"))
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
