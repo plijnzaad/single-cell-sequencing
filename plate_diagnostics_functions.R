@@ -743,28 +743,22 @@ read.stats <- function(file) {
 }                                       #read.stats
 
 read.wellwise.saturation <- function(file) {
-  if(! file.exists(file)) {
-    warning("No wellwise saturation file found (expected ", file, ")")
-    return(NULL)
-  }
+  if(! file.exists(file))
+    stop("No wellwise saturation file found (expected ", file, ")")
 
   tab <- read.table(file=file, sep="\t",
                     as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
   names(tab)[1] <- gsub("^(X\\.)?n?", "",names(tab)[1])
-  if( !setequal(colnames(tab), c("reads", as.vector(wellname())))) {
-    warning("wrong column names; expected 'nreads \\t A1 \\t A2 ... \\t P24")
-    return(NULL)
-  }
+  if( !setequal(colnames(tab), c("reads", as.vector(wellname()))))
+    stop("wrong column names; expected 'nreads \\t A1 \\t A2 ... \\t P24")
   tab
 }                                       #read.wellwise.saturation
 
 read.saturations <- function(name) {
   file <- paste0(name, "-saturation.txt")
   
-  if(! file.exists(file)) {
-    warning("No saturation files found (expected ", file, ")")
-    return(NULL)
-  }
+  if(! file.exists(file))
+    stop("No saturation files found (expected ", file, ")")
     
   all <- read.table(file=file, sep="\t",
                     as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
