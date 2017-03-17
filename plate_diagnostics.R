@@ -12,6 +12,9 @@ library(RColorBrewer)
 library(oce)
 
 rm(list=ls())                           #to avoid copypaste-errors
+
+prefix <- "*wellsat*"                           # file glob to select data set if > 1 in a directory
+
 script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 
 source(script)
@@ -43,8 +46,7 @@ if (file.exists(config.file)) {
 ### ---- No configurable stuff below this line ----
 
 #variables for the script
-names<-list() # for the shortened names of the libraries
-split_files<-list() # for  full names of the plates without .cout* extension
+paths<-list() # dir + basename, no extension
 rc<-list() # list of .coutc files (raw reads)
 bc<-list() # list of .coutb files (umis)
 tc<-list() # list of .coutt files (transcripts)
@@ -63,25 +65,32 @@ stats<-list() # list of stats (written as comment on top to the *.cout?.csv file
 #read data into four lists
 
 setwd(inputdir)
-files <- read_files(dir = getwd())
 
-# read in files
-split_files <-sub(".*\\/","",files)
-for(i in 1:length(files)){
-  names[[i]] <-  sub("\\_.*","",split_files[[i]]) # split lib name to keep only name supplied by you to cuppen group 
-  cat("\n",split_files[[i]],"was renamed to",names[[i]],"\n",sep = " ") # fyi how the libraries will be named
-  cat("reading .cout files for plate",i, "out of", length(files),"\n",sep = " ") # reports progress
-  counts.file <- paste(files[i],".coutc.csv", sep="")
-  umi.file <- paste(files[i],".coutb.csv", sep="")
-  txpt.file <- paste(files[i],".coutt.csv", sep="")
+dir <- getwd()
+
+basenames <- get.file.names(dir = dir, prefix=prefix)
+## i.e. filename without directory nor extension
+if (is.null(names) || length(names)==0)
+  stop("Found no files called ", sprintf("%s/%s.cout(t|b|c.csv", dir, prefix))
+
+if (length(basenames) > 1)
+  warning("Found more than one set of files", 
+          paste(collapse=" ", sprintf("%s/%s.*", dir,names)))
+
+for(i in 1:length(basenames)) {
+  path <- paste(dir, basenames[i], sep="/")
+  warn("Reading ", path, ".* ...")
+  paths[[i]] <- path
+  counts.file <- paste0(path,".coutc.csv")
+  umi.file <- paste0(path,".coutb.csv")
+  txpt.file <- paste0(path,".coutt.csv")
   rc[[i]] <- read.counts(file=counts.file)
   bc[[i]] <- read.counts(file=umi.file)
   tc[[i]] <- read.counts(file=txpt.file)
   stats[[i]] <- read.stats(file=counts.file)
-  saturations[[i]] <- read.saturations(names[[i]])
-  cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
+  saturations[[i]] <- read.saturations(path)
+  cat("library",path,"contains a total of",nrow(tc[[i]]),"genes\n")
 }
-
 
 # OPTIONAL: rename part of a specified plate if you have different experiments in one plate
 # do this only for one of the .coutt files at the time by choosing the correct location in the .coutt list (eg:tc[[5]])
@@ -94,7 +103,7 @@ dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn'
 setwd(outputdir)
 for(i in 1:length(tc)) {
   A4.width <- 8.3; A4.height <- 11.7
-  file <- paste0(names[[i]],"_plate_diagnostics.pdf")
+  file <- paste0(paths[[i]],"_plate_diagnostics.pdf")
   if(landscape.mode) { 
     pdf(file=file, width=A4.height, height=A4.width)
     par(mfrow = c(3,4)) # specify grid for plots on the pdf
@@ -114,7 +123,7 @@ for(i in 1:length(tc)) {
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid,
               unmapped=unname(st["unmapped"]),
               umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
-  infobox(script=script,dir=inputdir,filename=split_files[i],totals=totals)
+  infobox(script=script,dir=inputdir,filename=paths[[i]],totals=totals)
 
   rawreads.total <- colSums(rmspike(rc[[i]]))
   genes <- rmspike(tc[[i]])

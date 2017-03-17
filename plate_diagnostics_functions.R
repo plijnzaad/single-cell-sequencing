@@ -518,49 +518,20 @@ topgenes<-function(data){
     barplot(log2(rev(idx.disp[1:20])),las=1,cex.names = 0.5, main="top varying genes",xlab="log2(var/mean)",horiz=TRUE)
 }
 
-
 #Read files in specified directory automatically (based on Thoms script)
-read_files <- function(dir = ""){
-  
-  #add "/" to dir
-  if(substr(dir, start = nchar(dir), stop = nchar(dir)) != "/" && dir != ""){
-    dir <- paste(dir, "/", sep = "")
-  }
-  
-  #Read files
-  files <- list.files(dir, ".cout(t|b|c).csv")
+get.file.names <- function(dir = "./", prefix="*") {
+  files <- list.files(dir, pattern=paste0(prefix,".cout(t|b|c).csv"))
   split <- strsplit(files,split = ".cout")
-  file_names <- unique(as.character(data.frame(split, stringsAsFactors = FALSE)[1,]))
-  
-  #This check if all necessary files are in the script
-  error <- ""
-  for(i in 1:length(file_names)){
-    
-    if(file.exists(paste(dir, file_names[i],".coutb.csv", sep="")) == FALSE){
-      f <- paste(file_names[i], ".coutb.csv", " is not found!", sep = "")
-      error <- paste(error, "\n", f)
-    }
-    
-    if(file.exists(paste(dir, file_names[i],".coutc.csv", sep="")) == FALSE){
-      f <- paste(file_names[i], ".coutc.csv", " is not found!", sep = "")
-      error <- paste(error, "\n", f)
-    }
-    
-    if(file.exists(paste(dir,file_names[i],".coutt.csv", sep="")) == FALSE){
-      f <- paste(file_names[i], ".coutt.csv", " is not found!", sep = "")
-      error <- paste(error, "\n", f)
+  names <- unique(unlist(lapply(split,function(l)l[1])))
+  for (name in names) { 
+    for (letter in c("c", "b", "t")) {
+      expect <- sprintf("%s/%s.cout%s.csv", dir, name, letter)
+      if(! file.exists(expect))
+        stop(expect, " not found")
     }
   }
-  
-  if(error != ""){
-    stop(error)
-  }
-  cat("the following plates will be processed:\n")
-  print(file_names)
-
-  output <- paste(dir,file_names, sep="")
-  return(output)
-}
+  return(names)                         #note: without the directory
+}                                       #get.file.names
 
 wellname <- function(i=NULL,j=NULL) {
     ## returns name of all wells (i==NULL), or given its index (J=NULL) or coordinates
@@ -574,8 +545,7 @@ wellname <- function(i=NULL,j=NULL) {
       t(m)[i]
     else
       m[row,col]
-}
-
+}                                       #well.name
 
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
 leakygenes<-function(data, emptywells) {
