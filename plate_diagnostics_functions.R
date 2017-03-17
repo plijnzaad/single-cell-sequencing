@@ -257,14 +257,17 @@ well.coverage <- function(main, gene.total) {
   freq <- sapply(ticks, function(cnt)sum(gene.total >= cnt))
   xlim <- log10(range(ticks))
   ylim <- c(0, 400)
-  plot(pch=19, cex=0.5,main="txpt coverage per well", x=log10(ticks), y=freq, type="b", tck=1, col="red",
+  plot(pch=19, cex=0.5,main="txpt coverage per well", x=log10(ticks), y=freq, 
+       type="o",tck=1, col="red",
        lwd=2 ,axes=FALSE, xlab="N", ylab="wells with >= N transcripts",
        xlim=xlim, ylim=ylim, xaxs="i", yaxs="i")
-  axis(1, at=log10(ticks), labels=sprintf("%s",commafy(ticks)),las=3, cex.axis=cex, tck=0, pos=min(ylim))
-  axis(2, at=seq(0,400,by=50), labels=TRUE, cex.axis=cex, tck=0, las=1, pos=min(xlim))
+  axis(1, at=log10(ticks), labels=sprintf("%s",commafy(ticks)),las=3, 
+       cex.axis=cex,tck=0, pos=min(ylim))
+  axis(2, at=seq(0,400,by=50), labels=TRUE, 
+       cex.axis=cex, tck=0, las=1, pos=min(xlim))
   abline(h=seq(0,400,by=50), v=log10(ticks), col="grey")
-  axis(4, at=seq(0,384,length.out=11), labels=paste0(seq(0, 100,length.out=11), '%'), cex.axis=cex,
-       tck= -0.01, las=1, pos=max(xlim))
+  axis(4, at=seq(0,384,length.out=11), labels=paste0(seq(0, 100,length.out=11), '%'),
+       cex.axis=cex, tck= -0.01, las=1, pos=max(xlim))
   mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="red", cex=cex)
 }                                       #well.coverage
 
@@ -367,7 +370,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) {
   ##       col=c('black', 'blue', 'red'),
   ##       legend=c('actual', 'halfdata', 'fulldata'))
 
-  usrx <- 0.60*(max(data$reads))        # to find the bottomright corner
+  usrx <- 0.40*(max(data$reads))        # to find the bottomright corner
 
   lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
   abline(h=max,col="red", lty=2)
