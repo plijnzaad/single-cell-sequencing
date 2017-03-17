@@ -49,7 +49,7 @@ rc<-list() # list of .coutc files (raw reads)
 bc<-list() # list of .coutb files (umis)
 tc<-list() # list of .coutt files (transcripts)
 saturations <- list() # table with number of SAM lines, and number of different genes seen so far
-stats<-list() # list of stats (written as comment on top to the *.coutt.csv file)
+stats<-list() # list of stats (written as comment on top to the *.cout?.csv files)
 
 #### OPTIONAL: Merge CS1-type libraries into one 384-column long CS2-type file####
 # do this ONLY if you have CS1-style (4 libraries in one plate) data that you want to run this script on
@@ -82,12 +82,6 @@ for(i in 1:length(files)){
   cat("library",names[[i]],"contains a total of",nrow(tc[[i]]),"genes\n")
 }
 
-genes <- rmspike(rc[[1]])
-ngenes <- nrow(genes)
-spikes <- keepspike(rc[[1]])
-nspikes <- nrow(spikes)
-totvalid <- sum(rc[[1]])
-st <- apply(stats[[1]], 1, sum)
 
 # OPTIONAL: rename part of a specified plate if you have different experiments in one plate
 # do this only for one of the .coutt files at the time by choosing the correct location in the .coutt list (eg:tc[[5]])
@@ -108,7 +102,15 @@ for(i in 1:length(tc)) {
     pdf(file=file, width=A4.width, height=A4.height)
     par(mfrow = c(4,3)) # specify grid for plots on the pdf
   }
-  
+
+  genes <- rmspike(rc[[i]])
+  ngenes <- nrow(genes)
+  spikes <- keepspike(rc[[i]])
+  nspikes <- nrow(spikes)
+  totvalid <- sum(rc[[i]])
+  totumis <- sum(bc[[i]])
+  st <- apply(stats[[i]], 1, sum)
+
   totals <- c(ngenes=ngenes, nspikes=nspikes, reads=totvalid,
               unmapped=unname(st["unmapped"]),
               umis=sum(bc[[i]]), txpts=sum(tc[[i]]))
