@@ -329,8 +329,8 @@ mm.fit <- function(data) {
   return(model)
 }                                       #mm.fit
 
-saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) { 
-  ## browser()
+saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) { 
+#  browser()
   if (is.null(x) || length(x)==0) {
     .empty.plot(main="coverage", msg="no data")
     return()
@@ -339,6 +339,13 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
 
   plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
        type="l", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
+
+  if(!is.null(maxn)) { 
+    maxperc <- max(y)/maxn*100
+    at.perc <- axisTicks(c(0,maxperc), FALSE, nint=10)
+    axis(4, at=at.perc/100*maxn, labels=paste0(at.perc, '%'),
+         cex.axis=cex, tck= -0.01, las=1, pos=max(x))
+  }
 
   atx <- axTicks(1)
   aty <- axTicks(2)
@@ -380,7 +387,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", ...) {
           col="blue", lwd=2, lty=3)
     abline(h=max,col="blue", lty=2)
     details <- fit.details(model2, data2$y, pred='half data')
-    mtext(side=1, line= -4, adj=0, at=usrx, text=details, cex=cex, col="blue")
+    mtext(side=1, line= -5, adj=0, at=usrx, text=details, cex=cex, col="blue")
   }  
 
   return()
