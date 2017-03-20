@@ -344,7 +344,7 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) {
   cex <- 0.6
 
   plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
-       type="l", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
+       type="n", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
 
   if(!is.null(maxn)) { 
     maxperc <- max(y)/maxn*100
@@ -373,29 +373,16 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) {
   ##       col=c('black', 'blue', 'red'),
   ##       legend=c('actual', 'halfdata', 'fulldata'))
 
-  usrx <- 0.40*(max(data$reads))        # to find the bottomright corner
 
-  lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
+  lines(x=x, y=y, ...,
+        lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
+
   abline(h=max,col="red", lty=2)
+  lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
   details <- fit.details(model, data$y, pred='full data')
-  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
 
-  ## ## fit model to the first half of the data (to see how well it works)
-  ## end2 <- floor(nrow(data)/2)
-  ## data2 <- data[ 1:end2, ]
-  ## model2 <- mm.fit(data2)
-  ## 
-  ## if (!is.null(model2)) {
-  ##   fitted2 <- fitted(model2)
-  ##   max2 <- coef(model2)['Vm']
-  ##   lines(x=data2[1:end2,'reads'], y=fitted2, col="blue", lwd=2, lty=2)
-  ##   to.predict <- data[end2:nrow(data),]
-  ##   lines(x=to.predict$reads, y=predict(model2,newdata=to.predict),
-  ##         col="blue", lwd=2, lty=3)
-  ##   abline(h=max,col="blue", lty=2)
-  ##   details <- fit.details(model2, data2$y, pred='half data')
-  ##   mtext(side=1, line= -5, adj=0, at=usrx, text=details, cex=cex, col="blue")
-  ## }  
+  usrx <- 0.40*(max(data$reads))        # to find the bottomright corner
+  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
 
   return()
 }                                       # saturation.plot()
