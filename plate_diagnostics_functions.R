@@ -379,22 +379,23 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) {
   abline(h=max,col="red", lty=2)
   details <- fit.details(model, data$y, pred='full data')
   mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
-  
-  end2 <- floor(nrow(data)/2)
-  data2 <- data[ 1:end2, ]
-  model2 <- mm.fit(data2)
 
-  if (!is.null(model2)) {
-    fitted2 <- fitted(model2)
-    max2 <- coef(model2)['Vm']
-    lines(x=data2[1:end2,'reads'], y=fitted2, col="blue", lwd=2, lty=2)
-    to.predict <- data[end2:nrow(data),]
-    lines(x=to.predict$reads, y=predict(model2,newdata=to.predict),
-          col="blue", lwd=2, lty=3)
-    abline(h=max,col="blue", lty=2)
-    details <- fit.details(model2, data2$y, pred='half data')
-    mtext(side=1, line= -5, adj=0, at=usrx, text=details, cex=cex, col="blue")
-  }  
+  ## ## fit model to the first half of the data (to see how well it works)
+  ## end2 <- floor(nrow(data)/2)
+  ## data2 <- data[ 1:end2, ]
+  ## model2 <- mm.fit(data2)
+  ## 
+  ## if (!is.null(model2)) {
+  ##   fitted2 <- fitted(model2)
+  ##   max2 <- coef(model2)['Vm']
+  ##   lines(x=data2[1:end2,'reads'], y=fitted2, col="blue", lwd=2, lty=2)
+  ##   to.predict <- data[end2:nrow(data),]
+  ##   lines(x=to.predict$reads, y=predict(model2,newdata=to.predict),
+  ##         col="blue", lwd=2, lty=3)
+  ##   abline(h=max,col="blue", lty=2)
+  ##   details <- fit.details(model2, data2$y, pred='half data')
+  ##   mtext(side=1, line= -5, adj=0, at=usrx, text=details, cex=cex, col="blue")
+  ## }  
 
   return()
 }                                       # saturation.plot()
