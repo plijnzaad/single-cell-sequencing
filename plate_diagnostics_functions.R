@@ -347,11 +347,11 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
   plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
        type="n", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
 
-  if(!is.null(maxn)) { 
+  if(!is.null(maxn)) {
     maxperc <- max(y)/maxn*100
     at.perc <- axisTicks(c(0,maxperc), FALSE, nint=10)
-    axis(4, at=at.perc/100*maxn, labels=paste0(at.perc, '%'),
-         cex.axis=cex, tck= -0.01, las=1, pos=max(x))
+    axis(2, at=at.perc/100*maxn, labels=sprintf("%10d%%",at.perc), hadj=0,
+         cex.axis=cex, tck= 0.01, las=1)
   }
 
   atx <- axTicks(1)

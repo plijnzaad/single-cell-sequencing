@@ -233,6 +233,7 @@ for(i in 1:length(tc)) {
          saturation.plot(main="saturation of mean umis/gene", 
                          x=nmapped, y=u.per.g, rug=rug, maxn= max(u.per.g),
                          xlab="mapped reads seen", ylab="unique umis/unique gene seen")
+       })
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
