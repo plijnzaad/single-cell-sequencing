@@ -519,8 +519,9 @@ topgenes<-function(data){
 }
 
 #Read files in specified directory automatically (based on Thoms script)
-get.file.names <- function(dir = "./", prefix="*") {
-  files <- list.files(dir, pattern=paste0(prefix,".cout(t|b|c).csv"))
+get.file.names <- function(dir = "./", regexp=".*") {
+  pat <- paste0(regexp,"\\.cout[cbt]\\.csv")
+  files <- list.files(path=dir, pattern=pat)
   split <- strsplit(files,split = ".cout")
   names <- unique(unlist(lapply(split,function(l)l[1])))
   for (name in names) { 

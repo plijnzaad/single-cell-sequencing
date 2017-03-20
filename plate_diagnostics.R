@@ -13,7 +13,7 @@ library(oce)
 
 rm(list=ls())                           #to avoid copypaste-errors
 
-prefix <- "*wellsat*"                           # file glob to select data set if > 1 in a directory
+regexp <- ".*wellsat.*"                           # file glob to select data set if > 1 in a directory
 
 script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 
@@ -68,9 +68,9 @@ setwd(inputdir)
 
 dir <- getwd()
 
-basenames <- get.file.names(dir = dir, prefix=prefix)
+basenames <- get.file.names(dir = dir, regexp=regexp)
 ## i.e. filename without directory nor extension
-if (is.null(names) || length(names)==0)
+if (is.null(basenames) || length(basenames)==0)
   stop("Found no files called ", sprintf("%s/%s.cout(t|b|c.csv", dir, prefix))
 
 if (length(basenames) > 1)
@@ -79,7 +79,7 @@ if (length(basenames) > 1)
 
 for(i in 1:length(basenames)) {
   path <- paste(dir, basenames[i], sep="/")
-  warn("Reading ", path, ".* ...")
+  warning("Reading ", path, ".* ...")
   paths[[i]] <- path
   counts.file <- paste0(path,".coutc.csv")
   umi.file <- paste0(path,".coutb.csv")
