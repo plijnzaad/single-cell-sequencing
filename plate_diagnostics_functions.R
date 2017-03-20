@@ -336,7 +336,8 @@ mm.fit <- function(data) {
   return(model)
 }                                       #mm.fit
 
-saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) { 
+saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL, ...) {
+  ## rug draws small ticks every 1M reads (mapped or not)
   if (is.null(x) || length(x)==0) {
     .empty.plot(main="coverage", msg="no data")
     return()
@@ -358,14 +359,17 @@ saturation.plot <- function(main, x, y, xlab,ylab, pred="", maxn=NULL, ...) {
   axis(1, at=atx, labels=FALSE)
   axis(2, at=aty, labels=FALSE)
   abline(h=aty, v=atx, col="grey")
+
+  if(!is.null(rug))                     
+    rug(x=rug, ticksize= 0.01, col="purple")
   
-  data <- data.frame(y=y, reads=x)
+  data <- data.frame(y=y, reads=x)      #actually mapped reads
 
   model <- mm.fit(data=data)
 
-  if(is.null(model)) { 
+  if(is.null(model))
     return()
-  }
+
   fitted <- fitted(model)
   max <- coef(model)['Vm']
 
