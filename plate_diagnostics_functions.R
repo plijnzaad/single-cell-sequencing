@@ -304,17 +304,18 @@ fit.details <- function(model,y, pred="") {
   if(is.null(model))
     return("(no fit")
   R2 <- R.squared(model,y)
-  coef <- coef(model)
-  coef.string <- paste(collapse="  ", sep=": ", names(coef), format.kMG(coef))
+  coef <- coef(model)                   #has names Vm and K
 
   extra <- ""
   if( names(coef)[1]== "Vm") { # Michaelis-Menten
     f <- 0.9
     nearing.at <- reads.required(K=coef['K'], f=f)
-    extra <- sprintf("%.1f%% at %s reads", floor(f*100), format.kMG(nearing.at))
+    ## extra <- sprintf("%.1f%% at %s reads", floor(f*100), format.kMG(nearing.at))
   }
-  
-  sprintf("%s: R2: %.3f\n%s\n%s", pred, R2, coef.string, extra)
+
+  ## coef.string <- paste(collapse="  ", sep=": ", names(coef), format.kMG(coef))
+  ## sprintf("%s: R2: %.3f\n%s\n%s", pred, R2, coef.string, extra)
+  sprintf("plateau at %.1e (R2 = %.3f)\nreaching 90%% at %.1e reads", coef['Vm'], R2, nearing.at)
 } # fit.details
 
 mm.fit <- function(data) {
