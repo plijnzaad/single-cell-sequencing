@@ -545,20 +545,20 @@ wellname <- function(i=NULL,j=NULL) {
 
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
 leakygenes<-function(plate, data, emptywells) {
-  empty<-data[emptywells] # subset data to the wells specified as empty
+  empty <- data[,emptywells] # subset data to the wells specified as empty
   names(empty)<-sapply(emptywells, wellname)
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
   genes.empty<-apply(rmspike(empty),2,function(x) sum(x>=1)) # remove ERCC reads
   spike.empty<-colSums(keepspike(empty))
-  empties<-data.frame(genes=genes.empty,ERCC=spike.empty)
+  empties.frame<-data.frame(genes=genes.empty,ERCC=spike.empty)
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
     warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", plate, n, length(emptywells)))
   ## plot genes/well and ERCC reads/well for empty wells
   par(mar = c(5, 4, 6, 1))
-  barplot(t(empties),main="transcripts in empty wells",
-          col=c("blue","red"),space=rep(c(5/nrow(empties),0),nrow(empties)),cex.names = 0.5,las=3,beside=TRUE,
-          legend=colnames(empties),
+  barplot(t(empties.frame),main="transcripts in empty wells",
+          col=c("blue","red"),space=rep(c(5/nrow(empties.frame),0),nrow(empties.frame)),cex.names = 0.5,las=3,beside=TRUE,
+          legend=colnames(empties.frame),
           args.legend = list(x = "topright", bty = "n",horiz=TRUE,inset=c(0,-0.25)))
   
   # determine top expressed genes in empty and compare to mean expressed genes in plate, but

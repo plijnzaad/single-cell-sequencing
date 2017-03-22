@@ -27,8 +27,13 @@ inputdir <- "."
 outputdir <- inputdir
 
 ## specify the location of your empty wells (follows primer number order):
-## emptywells <- c(357:360,381:384)        # bottomright 8 wells
-emptywells <- seq(24,384, by=24)        # rightmost column
+## empties <- c(357:360,381:384)        # bottomright 8 wells
+empties <- seq(24,384, by=24)        # rightmost column
+names(empties) <- wellname(empties)
+wells <- 1:384
+names(wells) <- wellname(wells)
+non.empties <- setdiff(wells, empties)
+names(non.empties) <- wellname(non.empties)
 
 landscape.mode <- TRUE
 
@@ -129,7 +134,7 @@ for(i in 1:length(tc)) {
   genes <- rmspike(tc[[i]])
   gene.total <- colSums(genes) # sum of unique txpts after removing spike ins
 
-  totaltxpts(gene.total, plotmethod = "hist", emptywells=emptywells) # total txpts/cell
+  totaltxpts(gene.total, plotmethod = "hist", emptywells=empties) # total txpts/cell
 
   spike.total<-colSums(keepspike(tc[[i]]))
   complexity<-apply(genes,2,function(x)sum(x>=1))
@@ -143,7 +148,7 @@ for(i in 1:length(tc)) {
               main='mapped raw gene reads',
               ticks=ticks,
               scale.name="log10",
-              emptywells=emptywells)
+              emptywells=empties)
 
   mapped <- apply(genes,2,sum)
   unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
@@ -154,28 +159,28 @@ for(i in 1:length(tc)) {
   plate.plot(data=perc, main='% mapped raw gene reads',
              ticks=seq(0,100,10),
              scale.name="%",
-             emptywells=emptywells
+             emptywells=empties
              ## failedwells=failed
              )
 
   plate.plot(data=log10(gene.total), main='gene txpts',
               ticks=0:5,
               scale.name="log10",
-              emptywells=emptywells,
+              emptywells=empties,
               hilite=(gene.total>=1000),
               mtext=">=1000 unique txpts")
 
   plate.plot(data=log10(complexity), main='complexity',
               ticks=0:4,
               scale.name="log10",
-              emptywells=emptywells,
+              emptywells=empties,
               hilite=complexity>=1000,
               mtext=">=1000 unique genes")
 
   plate.plot(data=log10(spike.total), main='ERCC txpts',
               ticks=-1:4,
               scale.name="log10",
-              emptywells=emptywells,
+              emptywells=empties,
               hilite=spike.total>100,
               mtext=">100 ERCCs")
 
@@ -184,11 +189,11 @@ for(i in 1:length(tc)) {
   plate.plot(data=log2(spike.total/gene.total), main='ratio ERCC/gene txpts',
               ticks=-4:4,
               scale.name="log2",
-              emptywells=emptywells,
+              emptywells=empties,
               hilite=hilite,
               mtext="ERCC/gene > 0.05")
   
-  well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
+  well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-empties])
 
 ###   ## saturation plots, ignoring the wells
 ###   rug <- with(saturations[[i]]$all, nmapped[ reads %% 1e6 <= 1 ])
@@ -238,7 +243,7 @@ for(i in 1:length(tc)) {
 
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
-  leakygenes(plate=basenames[1], data=tc[[i]], emptywells=emptywells)
+  leakygenes(plate=basenames[1], data=tc[[i]], emptywells=empties)
   # leakygenes plots (1): number of genes and ERCC reads in the empty corner. Will give warning if a sample has more than plate average genes/5
   # (2): top expressed genes in the empty corner and % of their total reads in empty corner compared to total reads in whole plate.
   # (3): any genes that are in the top 50 genes in empty corner, but not in the top 200 genes in rest of plate (likely artifacts)
