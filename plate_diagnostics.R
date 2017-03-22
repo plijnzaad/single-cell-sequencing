@@ -190,20 +190,21 @@ for(i in 1:length(tc)) {
   
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-emptywells])
 
-  ## saturation plots
-  with(saturations[[i]]$all, 
-       saturation.plot(main="gene saturation",x=nmapped, y=genes, rug=rug, maxn=NULL,
-                       xlab="mapped reads seen", ylab="unique genes seen"))
-
-  ### note: alternative is to use same but using 'txpt(s)' instead of 'umi(s)'
-  with(saturations[[i]]$all, 
-       saturation.plot(main="umi saturation", x=nmapped, y=umis,rug=rug, maxn=totals['umis'],
-                       xlab="mapped reads seen", ylab="unique umis seen"))
-
-  with(saturations[[i]]$all,
-       saturation.plot(main="saturation of mean umis/gene", x=nmapped, y=umis/genes,rug=rug,
-                       xlab="mapped reads seen", ylab="unique umis/unique gene seen"))
-
+###   ## saturation plots, ignoring the wells
+###   rug <- with(saturations[[i]]$all, nmapped[ reads %% 1e6 <= 1 ])
+###   with(saturations[[i]]$all, 
+###        saturation.plot(main="gene saturation",x=nmapped, y=genes, rug=rug, maxn=NULL,
+###                        xlab="mapped reads seen", ylab="unique genes seen"))
+### 
+###   ### note: alternative is to use same but using 'txpt(s)' instead of 'umi(s)'
+###   with(saturations[[i]]$all, 
+###        saturation.plot(main="umi saturation", x=nmapped, y=umis, rug=rug, maxn=totals['umis'],
+###                        xlab="mapped reads seen", ylab="unique umis seen"))
+### 
+###   with(saturations[[i]]$all,
+###        saturation.plot(main="saturation of mean umis/gene", x=nmapped, y=umis/genes,rug=rug,
+###                        xlab="mapped reads seen", ylab="unique umis/unique gene seen"))
+### 
   ## ---- wellwise ----
   wells <- as.vector(wellname())
   maxg <- max(saturations[[i]]$genes_perwell[, wells])
