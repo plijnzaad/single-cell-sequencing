@@ -376,10 +376,40 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
     abline(h=max,col="black", lty=3)
     lines(data=data, fitted~reads, col="black", lwd=2, lty=2)
     details <- fit.details(model, data$y, pred='full data')
+    text(x=0.5*max(x), y=0.5*max(y), adj=c(0.5, NA), labels=details, cex=cex, col="black")
+  }
 
-  usrx <- 0.40*(max(data$reads))        # to find the bottomright corner
-  mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
+  ### ---- derivative:
+  col.deriv="blue"
+  n <- length(x)
+  every <- 100
+  every <- c(seq(1, n, by=every))       #forget the last one
+  x.every <- x[ every ]
+  y.every <- y[ every ]
 
+  d <- diff(y.every)
+  if( any(d < 0) ) {
+    warning("saturation curve is not monotonic (prolly umis/gene?)")
+    legend(x="bottomright", legend="data is not not monotonic", text.col="red", bty="n", cex=1)
+  }
+
+  ndiv <- 10
+  f <- maxy/max(d)                    # converting to same scale as left axis
+  lines(type="o", pch=19, cex=0.3, y=f*d, x=x.every[-1], lwd=2, col=col.deriv)
+
+  ### scale for derivative
+  at.diff <- axisTicks(c(0,max(d)), FALSE, nint=ndiv)
+  axis(2, at=at.diff*f, labels=at.diff, pos=max(x), cex.axis=cex,
+       las=1, col=col.deriv, col.ticks=col.deriv, col.axis=col.deriv)
+
+  ### also relative to max of main curve
+  maxperc <- max(d)/maxy*100
+  at.perc <- axisTicks(c(0,maxperc), FALSE, nint=ndiv)
+  axis(4, at=at.perc/max(maxperc)*maxy,
+       labels=sprintf("%d%%",at.perc), hadj=0.5, # leftpad with spaces to set them on rhs of axis
+       cex.axis=cex, tck= -0.01, las=1, col=col.deriv, col.ticks=col.deriv, col.axis=col.deriv)
+
+  mtext("extra items per 1M mapped reads", side=4, line=1.4, col=col.deriv, cex=cex*0.8)
   return()
 }                                       # saturation.plot()
 
