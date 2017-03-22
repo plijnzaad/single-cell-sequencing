@@ -336,6 +336,18 @@ mm.fit <- function(data) {
   return(model)
 }                                       #mm.fit
 
+save.par <- function(par, names) {
+  keep <- list()
+  for(name in names)
+    keep[[name]] <- par[[name]]
+  keep
+}
+
+restore.par <- function(saved) {
+  for(name in names(saved))
+    do.call(par, args=saved[name])
+}
+
 saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL, ...) {
   ## rug draws small ticks every 1M reads (mapped or not)
   if (is.null(x) || length(x)==0) {
@@ -344,6 +356,14 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
   }
   cex <- 0.6
 
+  par <- par(no.readonly=TRUE)
+  keep.par <- save.par(par,c("mar", "xpd"))
+  on.exit(restore.par(keep.par))
+  mar <- par$mar
+  mar[2] <- mar[2]*1.2
+  mar[4] <- mar[4]*1.2
+  par(mar=mar, xpd=FALSE)
+  
   plot(main=main, x=c(0, max(x)), y=c(0, max(y)), xlab=xlab,ylab=ylab, ...,
        type="n", lwd=2, col="black", cex.axis=cex, las=2, tck= -0.01, xaxs="i", yaxs="i")
 
@@ -481,8 +501,10 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
   
   counts.palette <- colorRampPalette(c("white","blue4"))(91)
 
-  mar <- par()$mar
-  save.mar <- mar
+  par <- par(no.readonly=TRUE)
+  keep.par <- save.par(par,c("mar", "xpd"))
+  on.exit(restore.par(keep.par))
+  mar <- par$mar
   mar[1] <- mar[1]*1.3                  #to get right aspect ratio for the plates
   mar[3] <- mar[3]*1.3
   par(mar=mar, xpd=TRUE)
@@ -491,7 +513,6 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
 
   if(is.null(data)) { 
     .empty.plot(main=main, msg="no data")
-    par(mar=save.mar, xpd=FALSE)
     return()
   }
   coordinates <- expand.grid(seq(1,24),rev(seq(1,16)))
@@ -511,7 +532,7 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
 
   if(!is.null(mtext))
     mtext(text=mtext,col="red",cex=cex)
-  par(mar=save.mar, xpd=FALSE)
+  return()
 }                                       # plate.plot
 
 # plot the top 20 genes with expression bar and then barplot their index of dispersion
@@ -569,8 +590,13 @@ leakygenes<-function(plate, data, emptywells) {
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
     warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", plate, n, length(emptywells)))
-  ## plot genes/well and ERCC reads/well for empty wells
+
+  par <- par(no.readonly=TRUE)
+  keep.par <- save.par(par,c("mar"))
+  on.exit(restore.par(keep.par))
   par(mar = c(5, 4, 6, 1))
+
+  ## plot genes/well and ERCC reads/well for empty wells
   barplot(t(empties.frame),main="transcripts in empty wells",
           col=c("blue","red"),space=rep(c(5/nrow(empties.frame),0),nrow(empties.frame)),cex.names = 0.5,las=3,beside=TRUE,
           legend=colnames(empties.frame),
@@ -609,6 +635,7 @@ leakygenes<-function(plate, data, emptywells) {
     warning(paste("there is complete overlap between empty genes and plate genes in ", plate))
   barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
           main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
+  return()
 }                                       #leakygenes
 
 colorize <- function(x, palette, min=NULL, max=NULL, na.col='grey') {
