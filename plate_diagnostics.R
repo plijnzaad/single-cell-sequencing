@@ -211,10 +211,10 @@ for(i in 1:length(tc)) {
 ###                        xlab="mapped reads seen", ylab="unique umis/unique gene seen"))
 ### 
   ## ---- wellwise ----
-  wells <- as.vector(wellname())
-  maxg <- max(saturations[[i]]$genes_perwell[, wells])
-  maxu <- max(saturations[[i]]$umis_perwell[, wells])
-
+  percentile <- 95
+  lastrow <- nrow(saturations[[i]]$genes_perwell)
+  maxg <- quantile(probs=percentile/100, unlist(saturations[[i]]$genes_perwell[lastrow, names(non.empties)]))
+  maxu <- quantile(probs=percentile/100, unlist(saturations[[i]]$umis_perwell[lastrow, names(non.empties)]))
 
   ## genes, mean based:
   with(saturations[[i]]$wellwise_genes_mean, 
