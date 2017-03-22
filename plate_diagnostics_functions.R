@@ -544,7 +544,7 @@ wellname <- function(i=NULL,j=NULL) {
 }                                       #well.name
 
 ## check expression in empty wells of plate and calculate "leakyness" from highly expressed genes
-leakygenes<-function(data, emptywells) {
+leakygenes<-function(plate, data, emptywells) {
   empty<-data[emptywells] # subset data to the wells specified as empty
   names(empty)<-sapply(emptywells, wellname)
   genes<-apply(data,2,function(x) sum(x>=1)) # check how many genes are detected
@@ -553,7 +553,7 @@ leakygenes<-function(data, emptywells) {
   empties<-data.frame(genes=genes.empty,ERCC=spike.empty)
   n <- sum(genes.empty > median(genes)/5)
   if(n>0)
-    warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", names[[i]], n, length(emptywells)))
+    warning(sprintf("plate %s: %d/%d empty wells contain >= median/5 reads", plate, n, length(emptywells)))
   ## plot genes/well and ERCC reads/well for empty wells
   par(mar = c(5, 4, 6, 1))
   barplot(t(empties),main="transcripts in empty wells",
@@ -570,7 +570,7 @@ leakygenes<-function(data, emptywells) {
     return()
   }
   if( sum(use)== 1 )
-    warning(paste("Just one empty well with at least 75 ERCC reads, in", names[[i]]))
+    warning(paste("Just one empty well with at least 75 ERCC reads, in", plate))
   emptyz<-empty[use]  # take only wells that worked
   emptyz<-rmspike(emptyz)
   top.empty<-apply(emptyz,1,sum)[order(apply(emptyz,1,sum),decreasing=TRUE)][1:50] # pick top 50 in empty
@@ -591,7 +591,7 @@ leakygenes<-function(data, emptywells) {
              xlab="log2(sum(txpts in empty))",horiz=TRUE)
   text(0.5,b, round((top.empty[names(overlap)[1:10] ]/top.all[names(overlap)[1:10] ])*100,2))
   if (length(overlap)==50)
-    warning(paste("there is complete overlap between empty genes and plate genes in ", names[[i]]))
+    warning(paste("there is complete overlap between empty genes and plate genes in ", plate))
   barplot(log2(rev(non.overlap)),las=1,cex.names = 0.6,
           main="genes from top50-empty\n not in top200-all", xlab="log2(mean expression)",horiz=TRUE)
 }                                       #leakygenes
