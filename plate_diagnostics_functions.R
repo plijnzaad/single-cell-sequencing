@@ -344,22 +344,24 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
   }
   cex <- 0.6
 
-  plot(main=main, x=x, y=y, xlab=xlab,ylab=ylab, ...,
-       type="n", lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
-
-  if(!is.null(maxn)) {
-    maxperc <- max(y)/maxn*100
-    at.perc <- axisTicks(c(0,maxperc), FALSE, nint=10)
-    axis(2, at=at.perc/100*maxn, labels=sprintf("%10d%%",at.perc), hadj=0,
-         cex.axis=cex, tck= 0.01, las=1)
-  }
+  plot(main=main, x=c(0, max(x)), y=c(0, max(y)), xlab=xlab,ylab=ylab, ...,
+       type="n", lwd=2, col="black", cex.axis=cex, las=2, tck= -0.01, xaxs="i", yaxs="i")
 
   atx <- axTicks(1)
   aty <- axTicks(2)
-  axis(1, at=atx, labels=FALSE)
-  axis(2, at=aty, labels=FALSE)
+  axis(1, at=atx, labels=FALSE, cex.axis=cex)
+  axis(2, at=aty, labels=FALSE, cex.axis=cex)
   abline(h=aty, v=atx, col="grey")
 
+  maxy <- max(y)
+  if(!is.null(maxn)) {       #relative scale on left
+    maxn <- unname(maxn)     #confusing
+    maxperc <- maxy/maxn*100 # exceeds 100 when using eg. 95%-ile as max
+    at.perc <- axisTicks(c(0,maxperc), FALSE, nint=5)
+    axis(2, at=at.perc/100*maxn, labels=sprintf("%10d%%",at.perc), hadj=0, # leftpad with spaces to set them on rhs of axis
+         cex.axis=cex, tck= 0.01, las=1)
+  }
+  
   if(!is.null(rug))                     
     rug(x=rug, ticksize= 0.01, col="purple")
   
@@ -367,23 +369,13 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
 
   model <- mm.fit(data=data)
 
-  if(is.null(model))
-    return()
-
-  fitted <- fitted(model)
-  max <- coef(model)['Vm']
-
-  ## legend(x="bottomright", bty='n', lty=1, pch=NA,
-  ##       col=c('black', 'blue', 'red'),
-  ##       legend=c('actual', 'halfdata', 'fulldata'))
-
-
-  lines(x=x, y=y, ...,
-        lwd=2, col="black", cex.axis=cex, las=2, tck=0,xaxs="i", yaxs="i")
-
-  abline(h=max,col="red", lty=2)
-  lines(data=data, fitted~reads, col="red", lwd=2, lty=2)
-  details <- fit.details(model, data$y, pred='full data')
+  if(!is.null(model)) {
+    fitted <- fitted(model)
+    max <- coef(model)['Vm']
+    lines(x=x, y=y, ..., lwd=2, col="black")
+    abline(h=max,col="black", lty=3)
+    lines(data=data, fitted~reads, col="black", lwd=2, lty=2)
+    details <- fit.details(model, data$y, pred='full data')
 
   usrx <- 0.40*(max(data$reads))        # to find the bottomright corner
   mtext(side=1, line= -2, adj=0, at=usrx, text=details, cex=cex, col="red")
