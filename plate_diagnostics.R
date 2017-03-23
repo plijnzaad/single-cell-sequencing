@@ -1,52 +1,102 @@
-# Script for making a pdf containing diagnostic plots of SORT-Seq data. It goes trough the following steps:
-# optional: transform CS1 style data to CS2-style layout (from 4 96-cell libraries to 1 384-cell library)
-# read in ALL .cout* files in one folder
-# label cells with unique name taken from the input .cout* files and a number for each cell
-# optional: rename part of specific plates in the case of two different experiments in one plate
-# plot one pdf per plate containing diagnostic plots
-# merge specified plates into one file that can be loaded into RaceID
+#!/usr/bin/env Rscript
+## Script for making a pdf containing diagnostic plots of SORT-Seq data. It goes trough the following steps:
+## optional: transform CS1 style data to CS2-style layout (from 4 96-cell libraries to 1 384-cell library)
+## read in ALL .cout* files in one folder
+## label cells with unique name taken from the input .cout* files and a number for each cell
+## optional: rename part of specific plates in the case of two different experiments in one plate
+## plot one pdf per plate containing diagnostic plots
+## merge specified plates into one file that can be loaded into RaceID
 
 ## questions can be addressed to m.muraro@hubrecht.eu (and/or plijnzaad@gmail.com)
 
 library(RColorBrewer)
 library(oce)
+library(parseArgs)
 
-rm(list=ls())                           #to avoid copypaste-errors
+known.empties <- list(column24= seq(24,384, by=24),
+                      bottomright8 = c(357:360,381:384))
+known.empties.string <- paste(collapse=", ", names(known.empties))
 
-regexp <- ".*wellsat.*"                           # file glob to select data set if > 1 in a directory
+overview <- function()cat("Usage: plate_diagnostics.R  OPTIONS
+TO BE WRITTEN
+
+
+For specifying the empties, you can use one of: ", known.empties.string,"\n\n")
+
+## debug(parseArgs)
+## browser()
+
+if(interactive()) { 
+  cat("Clearing complete workspace")
+  keep <- ls(pat="known.empties.*")
+  rm(list= setdiff(ls(),keep)) #to avoid copypaste-errors in interacive mode
+
+  ### for specifying a 'command line' in an already running session
+  actuals=c("--regexp=.*wellsat.*")
+
+} else {
+  actuals <- NULL                       #will come from cmd line
+}
+
+args <- parseArgs(.overview=overview,
+                  verbose=TRUE,
+                  regexp='.*',
+                  inputdir=".",
+                  outputdir="same as inputdir",
+                  empties=names(known.empties)[1],
+                  .actuals=actuals
+##                  .allow.rest=TRUE,
+                  )
+
+if(args$verbose) { 
+  cat("Overview of arguments:\n")
+  str(args)
+}
 
 script <- "~/git/single-cell-sequencing/plate_diagnostics_functions.R"
 
 source(script)
 
+wells <- 1:384
+names(wells) <- wellname(wells)
+
 ### ---- Configurable stuff: ----
 ### defaults. If file plate_diagnostics_config.R is found in config.dir, it is read, which can be used
 ### to override the defaults
 
-inputdir <- "."
-outputdir <- inputdir
-
-## specify the location of your empty wells (follows primer number order):
-## empties <- c(357:360,381:384)        # bottomright 8 wells
-empties <- seq(24,384, by=24)        # rightmost column
-names(empties) <- wellname(empties)
-wells <- 1:384
-names(wells) <- wellname(wells)
-non.empties <- setdiff(wells, empties)
-names(non.empties) <- wellname(non.empties)
-
 landscape.mode <- TRUE
-
 ##if and where to write merged data:
 output.RaceID.file <- NULL
 
 config.file <- "plate_diagnostics_config.R"
-
 if (file.exists(config.file)) {
   warning("Seeing file ", normalizePath(config.file), ", sourcing it\n")
   source(config.file)            # for inspiration, see config.R.example
 } else
   warning("Not seeing file ", config.file, ", using default settings\n")
+
+inputdir <- args$inputdir
+outputdir <- args$outputdir
+
+if(outputdir=="same as inputdir") { 
+  outputdir <- inputdir
+}
+
+if(outputdir == ".")
+  outputdir <- getwd()
+
+empties <- args$empties
+
+if (  empties %in% names(known.empties) ) { 
+  empties <- known.empties[[empties]]
+} else
+  stop(empties, ": unknown specification of coordinates for empty cells use one of use one of: ", known.empties.string)
+
+names(empties) <- wellname(empties)
+non.empties <- setdiff(wells, empties)
+names(non.empties) <- wellname(non.empties)
+
+regexp <- args$regexp
 
 ### ---- No configurable stuff below this line ----
 
@@ -69,8 +119,8 @@ stats<-list() # list of stats (written as comment on top to the *.cout?.csv file
 ####read files and label cells ####
 #read data into four lists
 
+orig.dir <- getwd()
 setwd(inputdir)
-
 dir <- getwd()
 
 basenames <- get.file.names(dir = dir, regexp=regexp)
@@ -104,11 +154,15 @@ if(FALSE)
   names(tc[[5]])<-c(paste("alpha",c(1:192),sep="_"),paste("beta",c(1:192),sep="_")) 
 
 #### diagnostic plots####
-dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn't exist
+setwd(orig.dir)                         #outputdir may well be relative to this
+if(!dir.exists(outputdir))
+  dir.create(outputdir, showWarnings = TRUE) # directory will be made if it doesn't exist
 setwd(outputdir)
+
 for(i in 1:length(tc)) {
   A4.width <- 8.3; A4.height <- 11.7
-  file <- paste0(paths[[i]],"_plate_diagnostics.pdf")
+  file <- paste0(basenames[i],"_plate_diagnostics.pdf")
+  warning("Creating file ", paste(sep="/",outputdir, file), "\n")
   if(landscape.mode) { 
     pdf(file=file, width=A4.height, height=A4.width)
     par(mfrow = c(3,4)) # specify grid for plots on the pdf
@@ -241,6 +295,9 @@ for(i in 1:length(tc)) {
                          xlab="mapped reads seen", ylab="unique umis/unique gene seen")
        })
 
+
+
+  
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
   leakygenes(plate=basenames[1], data=tc[[i]], emptywells=empties)
