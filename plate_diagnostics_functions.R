@@ -348,14 +348,21 @@ restore.par <- function(saved) {
     do.call(par, args=saved[name])
 }
 
-saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL, ...) {
-  ## rug draws small ticks every 1M reads (mapped or not)
-  if (is.null(x) || length(x)==0) {
-    .empty.plot(main="coverage", msg="no data")
+saturation.plot <- function(main, data, xcol, ycol,
+                            diffdata, ycoldiff, xlab, ylab, pred="", max=NULL, ...) {
+  ## max=NULL: no relative scale on left; max=NA: use max(data[,ycol]) as max
+
+  if (is.null(data) || is.null(data[,xcol]) || is.null(data[,ycol]) ) { 
+    .empty.plot(main=main, msg="no data")
     return()
   }
-  cex <- 0.6
 
+  cex <- 0.6
+  
+  x <- data[,xcol]
+  y <- data[,ycol]
+  rug <- data[ data$reads %% 1e6 <= 1, 'nmapped']
+  
   par <- par(no.readonly=TRUE)
   keep.par <- save.par(par,c("mar", "xpd"))
   on.exit(restore.par(keep.par))
@@ -374,11 +381,13 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
   abline(h=aty, v=atx, col="grey")
 
   maxy <- max(y)
-  if(!is.null(maxn)) {       #relative scale on left
-    maxn <- unname(maxn)     #confusing
-    maxperc <- maxy/maxn*100 # exceeds 100 when using eg. 95%-ile as max
+  if(! is.null(max)) {                  #relative scale on left
+    if(is.na(max))
+      max <- maxy
+    max <- unname(max)               #confusing
+    maxperc <- maxy/max*100          # exceeds 100 when using eg. 95%-ile as max
     at.perc <- axisTicks(c(0,maxperc), FALSE, nint=5)
-    axis(2, at=at.perc/100*maxn, labels=sprintf("%10d%%",at.perc), hadj=0, # leftpad with spaces to set them on rhs of axis
+    axis(2, at=at.perc/100*max, labels=sprintf("%10d%%",at.perc), hadj=0, # leftpad with spaces to set them on rhs of axis
          cex.axis=cex, tck= 0.01, las=1)
   }
   
@@ -401,13 +410,8 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
 
   ### ---- derivative:
   col.deriv="blue"
-  n <- length(x)
-  every <- 100
-  every <- c(seq(1, n, by=every))       #forget the last one
-  x.every <- x[ every ]
-  y.every <- y[ every ]
-
-  d <- diff(y.every)
+  diffx <- diffdata[,xcol]
+  d <- diffdata[,ycoldiff]
   if( any(d < 0) ) {
     warning("saturation curve is not monotonic (prolly umis/gene?)")
     legend(x="bottomright", legend="data is not not monotonic", text.col="red", bty="n", cex=1)
@@ -415,7 +419,7 @@ saturation.plot <- function(main, x, y, rug=NULL, xlab,ylab, pred="", maxn=NULL,
 
   ndiv <- 10
   f <- maxy/max(d)                    # converting to same scale as left axis
-  lines(type="o", pch=19, cex=0.3, y=f*d, x=x.every[-1], lwd=2, col=col.deriv)
+  lines(type="o", pch=19, cex=0.3, y=f*d, x=diffx, lwd=2, col=col.deriv)
 
   ### scale for derivative
   at.diff <- axisTicks(c(0,max(d)), FALSE, nint=ndiv)
@@ -762,7 +766,7 @@ read.wellwise.saturation <- function(file) {
   tab
 }                                       #read.wellwise.saturation
 
-read.saturations <- function(name) {
+read.saturations <- function(name, diff.every=100) {
   file <- paste0(name, "-saturation.txt")
   
   if(! file.exists(file))
@@ -770,6 +774,9 @@ read.saturations <- function(name) {
     
   all <- read.table(file=file, sep="\t",
                     as.is=TRUE, quote="", header=TRUE,comment.char="", row.names=NULL)
+
+  if(all(all[1,]==1)) all <- all[-1,]
+  
   names(all)[1] <- gsub("^X\\.n?", "",names(all)[1])
   expected.cols <- c("reads", "nmapped", "nvalid", "genes", "umis", "txpts")
   missing <- setdiff(expected.cols, colnames(all))
@@ -778,25 +785,65 @@ read.saturations <- function(name) {
 
   sats <- list()
 
-  sats$all <- all
+  sats$all <- all               #lumps everything together, discarding well info
+  sats$perwell <- list()        #information for each well individually
+  sats$wellwise_mean <- list()  #averages taken of over all wells
 
+  sats$perwell_diff <- list()     #information for each well individually
+  sats$wellwise_mean_diff <- list()  # diff of wellwise mean (identical to mean of wellwise diffs!!)
+
+  sats$perwell_diff <- list()     #information for each well individually
+  sats$wellwise_mean_diff <- list()  # diff of wellwise mean (identical to mean of wellwise diffs!!)
+  
+  ## wellwise files:
   for (type in c('genes', 'umis')) { 
     file <- sprintf("%s-wellsat-%s.txt", name, type)
     tab <- read.wellwise.saturation(file)
     if(is.null(tab))
       return(NULL)
     m <- merge(all, tab,by='reads')
-    sats[[ paste(type, "perwell", sep="_") ]] <- m
-
-    for (func in c("mean", "median", "max")) {
-      aggr <- cbind(tab[,1], apply(tab[,-1], 1, func))
-      colnames(aggr) <- c("reads", paste(type, func, sep="_"))
-      sats[[ paste("wellwise", type, func, sep="_") ]] <- merge(all, aggr, by='reads')
-    }
+    sats$perwell[[type]] <- m
+    ## mean:
+    aggr <- cbind(tab[,1], apply(tab[,-1], 1, mean))
+    colnames(aggr) <- c("reads", "mean")
+    sats$wellwise_mean[[ type ]] <- merge(all, aggr, by='reads')
   }
 
+  n <- nrow(all)
+  x <- all[,'nmapped']
+  every <- c(seq(1, n, by=diff.every))
+  x.every <- x[ every[-1] ]           #skip first one
+  all.diff <- all[every[-1],]
+
+  for (type in c('genes', 'umis')) { 
+    m <- sats$perwell[[type]]
+
+    ## diff of overal wellwise mean:
+    wellwise_mean <- sats$wellwise_mean[[type]][, 'mean']
+    d <- diff(wellwise_mean[every])
+    tab <- cbind(all.diff, diffofmean=d)
+    sats$wellwise_mean_diff[[type]] <- tab
+
+    ## diffs per indiv. well:
+    y <- m[names(wells)]
+    y.every <- y[ every, ]
+
+    d <- apply(y.every, 2, diff)        #this keeps the A1, A2, ... names
+    tab <- cbind(all.diff, d)
+    sats$perwell_diff[[type]] <- tab
+  }
+
+  ## umis per gene
+  umispergene <- with(sats$wellwise_mean, umis$mean/genes$mean)
+  sats$umispergene <- cbind(all, umispergene=umispergene)
+
+  ## and their diffs
+  d <- diff(umispergene[every])
+  sats$umispergene_diff <- cbind(all.diff, diff=d)
+
   sats
-}                                       #read.saturations
+}
+                                        #read.saturations
 
 # Local variables:
 # mode: R
