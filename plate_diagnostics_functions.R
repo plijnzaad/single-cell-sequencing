@@ -91,7 +91,7 @@ overseq2 <- function(x,y) {
   bc.v<- unlist(y); bc.v <- bc.v[bc.v>0]
   results<-rc.v/bc.v
   hist(log2(results),breaks=75, col="red", border=NA, main=main,xlab=xlab)
-  mtext(sprintf("median: %.1f",median(rc.v/bc.v)), col="red", cex=0.6)
+  mtext(sprintf("median: %.1f",median(rc.v/bc.v)), col="DarkGreen", cex=0.6)
 }
 
 commafy <- function(x, preserve.width="common") { 
@@ -202,12 +202,12 @@ totaltxpts <- function(txpts,plotmethod=c("barplot","hist","cumulative","combo")
   if(plotmethod == "cumulative"){
     plot(ecdf(txpts),xlab="total reads",ylab="fraction",main="total unique reads",col="red",tck=1,pch=19,cex=cex,cex.axis=0.8) 
     abline(v=mean(txpts/2),col="red")
-    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="red",cex=cex)
+    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="DarkGreen",cex=cex)
   }
   
   if(plotmethod == "combo"){
     a<-hist(log10(txpts),breaks=100,xlab="log10(counts)",ylab="frequency",main="total unique reads",col="grey",xaxt="n",col.sub="red") 
-    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="red",cex=cex)
+    mtext(paste("mean:",round(mean(txpts))," median:",round(median(txpts))),side=3,col="DarkGreen",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))],labels=a$breaks[which(a$breaks %in% c(0,1,2,3,4,5))])
     abline(v=log10(mean(txpts)/2),col="red")
     text(log10(mean(txpts)/2),max(a$counts)-2, round(mean(txpts)/2), srt=0.2, col = "red",pos=2)
@@ -224,13 +224,13 @@ cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
 
   if(plotmethod == "hist"){
     a<-hist(complexity,breaks=100,xlab="total genes",ylab="frequency",main="unique genes detected/well",col="steelblue1",xaxt="n") 
-    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="DarkGreen",cex=cex)
     axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
   }
 
   if(plotmethod == "cumulative"){
     plot(ecdf(complexity),pch=19,cex=0.2,col="red",ylab="frequency",xlab="detected genes/well",main="cumul. complexity",cex.axis=1,las=1,tck=1)
-    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="DarkGreen",cex=cex)
   }
 
   if(plotmethod == "combo"){
@@ -239,7 +239,7 @@ cellgenes<-function(complexity,plotmethod=c("hist","cumulative","combo")) {
     xlim <- c(0, max(complexity))
     plot(d,ylab="density",main="complexity",xlab="unique genes/well",xlim=xlim, col="blue", yaxt="n")
     rug(complexity, ticksize= 0.02)
-    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="red",cex=cex)
+    mtext(paste("mean:",round(mean(complexity))," median:",round(median(complexity))),side=3,col="DarkGreen",cex=cex)
     ### axis(1,at=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))],labels=a$breaks[which(a$breaks %in% seq(0,max(a$breaks),1000))])
 
     plotInset(xleft=xlim[2]/2.5, xright=xlim[2], ybottom=max(d$y)/2, ytop=max(d$y),mar=c(1,1,1,1),
@@ -271,7 +271,7 @@ well.coverage <- function(main, gene.total) {
   lines(pch=19, cex=0.5,x=log10(ticks), y=freq, 
        type="o",tck=1, col="red",
        lwd=2, xaxs="i", yaxs="i")
-  mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="red", cex=cex)
+  mtext(sprintf("wells without txpts: %d", sum(gene.total==0) ), side=3, col="DarkGreen", cex=cex)
 }                                       #well.coverage
 
 ## Support for use of Michaelis-Menten for saturation curves comes from e.g. 
@@ -505,8 +505,22 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
     tot <- sum(hilite)
     mtext <- sprintf("%s: %d wells (%.0f%%)", mtext, tot, tot/384*100)
   }
-  
-  counts.palette <- colorRampPalette(c("white","blue4"))(91)
+
+  low <- "#313695";mid="#FFFFBF"; high="#A50026"   ## three-class RdYlBu, 11 levels
+  RdYlBu.orig <- colorRampPalette(c(low,mid,high))(91)
+  col.hilite <- "DarkGreen"
+
+  low <- '#91BFDB';  mid <- '#FFFFBF'; high <- '#FC8D59';  ## three-class RdYlBu, pastel
+  RdYlBu.pastel <- colorRampPalette(c(low,mid,high))(91)
+  col.hilite <- "magenta"
+
+  black <- "#000000"; red <- "#FF0000"; yellow <- "#FFFF00"
+  redhotpoker <- colorRampPalette(c(black,red,yellow))(91)
+  col.hilite <- "DarkGreen"
+
+###  counts.palette <- RdYlBu.pastel
+  counts.palette <- RdYlBu.orig
+###  counts.palette <- redhotpoker
 
   par <- par(no.readonly=TRUE)
   keep.par <- save.par(par,c("mar", "xpd"))
@@ -532,13 +546,13 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
   points(coordinates[infinite,],pch=pch.infinite, cex=0.5*cex.wells, col='black')
 
   if(!is.null(hilite))
-    points(coordinates[hilite,],pch=1, cex=cex.wells*1.1,col='red', lwd=0.3)
+    points(coordinates[hilite,],pch=1, cex=cex.wells*1.1,col=col.hilite, lwd=0.3)
 
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main=scale.name)
 
   if(!is.null(mtext))
-    mtext(text=mtext,col="red",cex=cex)
+    mtext(text=mtext,col=col.hilite,cex=cex)
   return()
 }                                       # plate.plot
 
