@@ -494,6 +494,7 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
                      mtext=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
+  pch.infinite <- 4 # small 'x' for Inf and NaN
 
   if(!is.null(hilite)) {
     stopifnot(is.logical(hilite)&&length(hilite)==384)
@@ -526,7 +527,7 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
   data[infinite] <- NA
   col <- colorize(x=data, counts.palette, na.col='white')
   points(coordinates,pch=19,col=col, cex=cex.wells)
-  points(coordinates[infinite,],pch=4, cex=0.5*cex.wells, col='black')
+  points(coordinates[infinite,],pch=pch.infinite, cex=0.5*cex.wells, col='black')
 
   if(!is.null(hilite))
     points(coordinates[hilite,],pch=1, cex=cex.wells*1.1,col='red', lwd=0.3)
