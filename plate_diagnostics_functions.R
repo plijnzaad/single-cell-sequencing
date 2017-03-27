@@ -494,6 +494,8 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
                      mtext=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
+  if( grepl("X11",names(dev.cur())) )
+    cex.wells <- 3.5
   pch.infinite <- 4 # small 'x' for Inf and NaN
 
   if(!is.null(hilite)) {
