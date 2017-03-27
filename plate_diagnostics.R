@@ -246,6 +246,30 @@ for(i in 1:length(tc)) {
               emptywells=empties,
               hilite=hilite,
               mtext="ERCC/gene > 0.05")
+
+## saturation per well as plateplot
+  
+  log2ticks <- list(genes=seq(0, 8, 2), umis=seq(0,10,2))
+  percticks <- list(genes=seq(0, 10, 1), umis=seq(0,20,2))
+
+  for(type in c("genes", "umis")) {
+    lastrow <- nrow(saturations[[i]]$perwell[[type]])
+    final <- unlist(saturations[[i]]$perwell[[type]][lastrow, names(wells)])
+
+    lastrow <- nrow(saturations[[i]]$perwell_diff[[type]])
+    plate.plot(data=log2(unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])),
+               scale.name="log2",ticks=log2ticks[[type]],
+               main=sprintf("new %s in last 1M reads", type))
+    plate.plot(data=100*unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])/final,
+               scale.name="%",ticks=percticks[[type]],
+               main=sprintf("new %s (rel) in last 1M reads", type))
+  }
+  u.per.g <- unlist(saturations[[i]]$perwell_diff[['umis']][lastrow, names(wells)])/
+    unlist(saturations[[i]]$perwell_diff[['genes']][lastrow, names(wells)])
+
+  plate.plot(data=u.per.g, 
+             scale.name="",ticks=1:8,
+             main="new # umi/genes in last 1e6 reads")
   
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-empties])
 
