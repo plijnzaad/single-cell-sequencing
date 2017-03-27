@@ -795,9 +795,6 @@ read.saturations <- function(name, diff.every=100) {
   sats$perwell_diff <- list()     #information for each well individually
   sats$wellwise_mean_diff <- list()  # diff of wellwise mean (identical to mean of wellwise diffs!!)
 
-  sats$perwell_diff <- list()     #information for each well individually
-  sats$wellwise_mean_diff <- list()  # diff of wellwise mean (identical to mean of wellwise diffs!!)
-  
   ## wellwise files:
   for (type in c('genes', 'umis')) { 
     file <- sprintf("%s-wellsat-%s.txt", name, type)
@@ -812,6 +809,8 @@ read.saturations <- function(name, diff.every=100) {
     sats$wellwise_mean[[ type ]] <- merge(all, aggr, by='reads')
   }
 
+
+  ## differences between recording points:
   n <- nrow(all)
   x <- all[,'nmapped']
   every <- c(seq(1, n, by=diff.every))
@@ -821,7 +820,7 @@ read.saturations <- function(name, diff.every=100) {
   for (type in c('genes', 'umis')) { 
     m <- sats$perwell[[type]]
 
-    ## diff of overal wellwise mean:
+    ## diff of overal wellwise mean (is same as mean of wellwise differences)
     wellwise_mean <- sats$wellwise_mean[[type]][, 'mean']
     d <- diff(wellwise_mean[every])
     tab <- cbind(all.diff, diffofmean=d)

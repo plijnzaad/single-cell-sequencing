@@ -288,16 +288,6 @@ for(i in 1:length(tc)) {
                   ycoldiff='diff',
                   xlab="mapped reads seen", ylab="unique umis/unique gene seen")
 
-### saturation per well as plateplot
-  
-  ## finalg <- unlist(saturations[[1]]$perwell$genes[lastrow, names(wells)])
-  ## finalg.rel <- finalg/maxg*100
-  ## 
-  ## finalu <- unlist(saturations[[1]]$perwell$umis[lastrow, names(wells)])
-  ## finalu.rel <- finalu/maxg*100
-
-
-  #### diff??
   
   cellgenes(complexity,plotmethod= "combo") # plot number of detected genes/cell, can choose 4 different plot methods
   topgenes(tc[[i]])  # 2 plots: top expressed and most variable genes
