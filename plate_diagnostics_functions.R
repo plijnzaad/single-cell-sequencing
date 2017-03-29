@@ -134,12 +134,22 @@ infobox <- function(script, dir, filename,totals) {
   text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
 }                                       #infobox
 
+
+failedwells.gen <- function(spikes, minmed=2, maxmissing=0.75) {
+    use <- apply(spikes,1,median)>=minmed
+    if (maxmissing %% 1 > 0)
+      maxmissing <- sum(use)*maxmissing   # if more than this many 'good' ERCCs miss, reaction has failed 
+    absent <- spikes[use,] == 0 
+    absent <- apply(absent, 2, function(col)sum(col)>= maxmissing)
+    names(absent[absent])
+}
+
 failedwells <- function(spikes) {
   use <- apply(spikes,1,median)>=4
   absent <- spikes[use,]==0
   absent <- apply(absent, 2, function(col)sum(col)>= 2)
   return(names(absent[absent]))
-  ## additional criterion
+  ## additional criterion (too many!)
   surv <- spikes[use, !absent]
   mn <- apply(log2(surv), 2, mean)
   med <- apply(log2(surv), 2, median)
@@ -491,12 +501,13 @@ testcutoff<-function(data,n,pdf=FALSE){
 
 #plot number of total reads, ERCC-reads and genes/well over a 384-well plate layout
 plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL,
-                     mtext=NULL) {
+                     mtext=NULL, failedwells=NULL) {
   cex <- 0.6
   cex.wells <- 1.1
   if( grepl("X11",names(dev.cur())) )
     cex.wells <- 3.5
   pch.infinite <- 4 # small 'x' for Inf and NaN
+  col.failed <- "black"
 
   if(!is.null(hilite)) {
     stopifnot(is.logical(hilite)&&length(hilite)==384)
@@ -547,6 +558,9 @@ plate.plot<-function(data, main, ticks, scale.name, emptywells=NULL, hilite=NULL
 
   if(!is.null(hilite))
     points(coordinates[hilite,],pch=1, cex=cex.wells*1.1,col=col.hilite, lwd=0.3)
+
+  if(!is.null(failedwells))
+    points(coordinates[failedwells,],pch=4, cex=cex.wells*1.1,col=col.failed, lwd=0.3)
 
   draw.color.scale(xleft=1, xright=24,ybottom=scale.bot, ytop=scale.top, at=ticks, sep=0.2, cex.axis=0.5,
                    col=counts.palette, main=scale.name)

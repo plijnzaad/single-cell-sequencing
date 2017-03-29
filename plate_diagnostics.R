@@ -193,59 +193,67 @@ for(i in 1:length(tc)) {
   spike.total<-colSums(keepspike(tc[[i]]))
   complexity<-apply(genes,2,function(x)sum(x>=1))
 
+  failed <- failedwells.gen(spikes)         #names, not logical idx!
+  
   logdata <- log10(rawreads.total)
   f <- logdata[ logdata != -Inf ] 
   from <- floor(min(f))
   to <- ceiling(max(logdata))
   ticks <- from:to
   plate.plot(data=logdata,
-              main='mapped raw gene reads',
-              ticks=ticks,
-              scale.name="log10",
-              emptywells=empties)
-
+             main='mapped raw gene reads',
+             ticks=ticks,
+             scale.name="log10",
+             emptywells=empties,
+             failedwells=failed)
+  
   mapped <- apply(genes,2,sum)
   unmapped <- as.matrix(stats[[i]])['unmapped',] ## unmapped stats are combined for ERCC's and genes of course
   perc <- 100*(mapped/(mapped+unmapped))
 
-  failed <- failedwells(spikes)         #names, not logical idx!
   
   plate.plot(data=perc, main='% mapped raw gene reads',
              ticks=seq(0,100,10),
              scale.name="%",
-             emptywells=empties
-             ## failedwells=failed
+             emptywells=empties,
+             failedwells=failed
              )
 
   plate.plot(data=log10(gene.total), main='gene txpts',
-              ticks=0:5,
-              scale.name="log10",
-              emptywells=empties,
-              hilite=(gene.total>=1000),
-              mtext=">=1000 unique txpts")
+             ticks=0:5,
+             scale.name="log10",
+             emptywells=empties,
+             hilite=(gene.total>=1000),
+             mtext=">=1000 unique txpts",
+             failedwells=failed)
 
   plate.plot(data=log10(complexity), main='complexity',
-              ticks=0:4,
-              scale.name="log10",
-              emptywells=empties,
-              hilite=complexity>=1000,
-              mtext=">=1000 unique genes")
+             ticks=0:4,
+             scale.name="log10",
+             emptywells=empties,
+             hilite=complexity>=1000,
+             mtext=">=1000 unique genes",
+             failedwells=failed)
 
   plate.plot(data=log10(spike.total), main='ERCC txpts',
-              ticks=-1:4,
-              scale.name="log10",
-              emptywells=empties,
-              hilite=spike.total>100,
-              mtext=">100 ERCCs")
-
+             ticks=-1:4,
+             scale.name="log10",
+             emptywells=empties,
+             hilite=spike.total>100,
+             mtext=">100 ERCCs",
+             failedwells=failed
+             )
+  
   hilite <- (spike.total/gene.total>0.05)
   hilite[is.na(hilite)] <- FALSE
   plate.plot(data=log2(spike.total/gene.total), main='ratio ERCC/gene txpts',
-              ticks=-4:4,
-              scale.name="log2",
-              emptywells=empties,
-              hilite=hilite,
-              mtext="ERCC/gene > 0.05")
+             ticks=-4:4,
+             scale.name="log2",
+             emptywells=empties,
+             hilite=hilite,
+             mtext="ERCC/gene > 0.05",
+             failedwells=failed
+             )
 
 ## saturation per well as plateplot
   
@@ -259,17 +267,22 @@ for(i in 1:length(tc)) {
     lastrow <- nrow(saturations[[i]]$perwell_diff[[type]])
     plate.plot(data=log2(unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])),
                scale.name="log2",ticks=log2ticks[[type]],
-               main=sprintf("new %s in last 1M reads", type))
+               main=sprintf("new %s in last 1M reads", type),
+               failedwells=failed)
+
     plate.plot(data=100*unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])/final,
                scale.name="%",ticks=percticks[[type]],
-               main=sprintf("new %s (rel) in last 1M reads", type))
+               main=sprintf("new %s (rel) in last 1M reads", type),
+               failedwells=failed)
   }
+
   u.per.g <- unlist(saturations[[i]]$perwell_diff[['umis']][lastrow, names(wells)])/
     unlist(saturations[[i]]$perwell_diff[['genes']][lastrow, names(wells)])
 
   plate.plot(data=u.per.g, 
              scale.name="",ticks=1:8,
-             main="new # umi/genes in last 1e6 reads")
+             main="new # umi/genes in last 1e6 reads",
+             failedwells=failed)
   
   well.coverage(main="gene txpt coverage (non-empty wells)", gene.total[-empties])
 
