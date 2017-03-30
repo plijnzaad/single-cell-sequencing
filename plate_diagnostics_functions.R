@@ -108,9 +108,12 @@ getversion <- function(path) {
   res
 }                                       #getversion
 
+.rightmost.nchar <- function(string,n)substring(string, first=(nchar(string)-n+1))
+
 infobox <- function(script, dir, filename,totals) {
+  cex <- 0.6
   ## print version filename and some overal statistics
-  plot(type="n", x=c(0,1), y=c(0,1), axes=FALSE, xlab=NA,ylab=NA, main="Information")
+  plot(type="n", x=c(0,1), y=c(0,1), axes=FALSE, xlab=NA,ylab=NA, main="Information", cex=cex)
   dir <- dirname(normalizePath(dir))
   len <- nchar(dir); maxlen <- 30
   if(len>maxlen)
@@ -121,8 +124,8 @@ infobox <- function(script, dir, filename,totals) {
   totreads <- valid + unmapped #note: ignores all those without a valid CBC, and more!
   text <- c(
     paste0("script version: ", getversion(script)),
-    paste0("dir: ", dir),
-    paste0("file: ", filename),
+    paste0("dir: ", .rightmost.nchar(dir,55)),
+    paste0("file: ", .rightmost.nchar(filename,55)),
     sprintf("refgenes found: %d", totals['ngenes']),
     sprintf("ERCCs found: %d", totals['nspikes']),
     sprintf("total reads with CBC: %s\n\t mapped: %s (%.1f %%) ",
@@ -131,7 +134,7 @@ infobox <- function(script, dir, filename,totals) {
     paste0("total txpts(mapped, valid CBC): ",  commafy(totals['txpts']))
     )
 
-  text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text)
+  text(pos=4, x=0, y=seq(1, 0, length.out=length(text)), labels=text, cex=cex)
 }                                       #infobox
 
 
