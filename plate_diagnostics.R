@@ -195,7 +195,7 @@ for(i in 1:length(tc)) {
 
   failed <- failedwells.gen(spikes)         #names, not logical idx!
   
-  logdata <- log10(rawreads.total)
+  logdata <- log10(rawreads.total+1)
   f <- logdata[ logdata != -Inf ] 
   from <- floor(min(f))
   to <- ceiling(max(logdata))
@@ -219,7 +219,7 @@ for(i in 1:length(tc)) {
              failedwells=failed
              )
 
-  plate.plot(data=log10(gene.total), main='gene txpts',
+  plate.plot(data=log10(gene.total+1), main='gene txpts',
              ticks=0:5,
              scale.name="log10",
              emptywells=empties,
@@ -227,7 +227,7 @@ for(i in 1:length(tc)) {
              mtext=">=1000 unique txpts",
              failedwells=failed)
 
-  plate.plot(data=log10(complexity), main='complexity',
+  plate.plot(data=log10(complexity+1), main='complexity',
              ticks=0:4,
              scale.name="log10",
              emptywells=empties,
@@ -235,7 +235,7 @@ for(i in 1:length(tc)) {
              mtext=">=1000 unique genes",
              failedwells=failed)
 
-  plate.plot(data=log10(spike.total), main='ERCC txpts',
+  plate.plot(data=log10(spike.total+1), main='ERCC txpts',
              ticks=-1:4,
              scale.name="log10",
              emptywells=empties,
@@ -246,7 +246,7 @@ for(i in 1:length(tc)) {
   
   hilite <- (spike.total/gene.total>0.05)
   hilite[is.na(hilite)] <- FALSE
-  plate.plot(data=log2(spike.total/gene.total), main='ratio ERCC/gene txpts',
+  plate.plot(data=log2((1+spike.total)/(1+gene.total)), main='ratio ERCC/gene txpts',
              ticks=-4:4,
              scale.name="log2",
              emptywells=empties,
@@ -265,12 +265,12 @@ for(i in 1:length(tc)) {
     final <- unlist(saturations[[i]]$perwell[[type]][lastrow, names(wells)])
 
     lastrow <- nrow(saturations[[i]]$perwell_diff[[type]])
-    plate.plot(data=log2(unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])),
+    plate.plot(data=log2(1+unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])),
                scale.name="log2",ticks=log2ticks[[type]],
                main=sprintf("new %s in last 1M reads", type),
                failedwells=failed)
 
-    plate.plot(data=100*unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])/final,
+    plate.plot(data=100*unlist(saturations[[i]]$perwell_diff[[type]][lastrow, names(wells)])/(1+final),
                scale.name="%",ticks=percticks[[type]],
                main=sprintf("new %s (rel) in last 1M reads", type),
                failedwells=failed)
