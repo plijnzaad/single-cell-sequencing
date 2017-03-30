@@ -195,7 +195,7 @@ for(i in 1:length(tc)) {
 
   failed <- failedwells.gen(spikes)         #names, not logical idx!
   
-  logdata <- log10(rawreads.total+1)
+  logdata <- log2(rawreads.total+1)
   f <- logdata[ logdata != -Inf ] 
   from <- floor(min(f))
   to <- ceiling(max(logdata))
@@ -203,7 +203,7 @@ for(i in 1:length(tc)) {
   plate.plot(data=logdata,
              main='mapped raw gene reads',
              ticks=ticks,
-             scale.name="log10",
+             scale.name="log2",
              emptywells=empties,
              failedwells=failed)
   
@@ -219,25 +219,25 @@ for(i in 1:length(tc)) {
              failedwells=failed
              )
 
-  plate.plot(data=log10(gene.total+1), main='gene txpts',
-             ticks=0:5,
-             scale.name="log10",
+  plate.plot(data=log2(gene.total+1), main='gene txpts',
+             ticks=0:16,
+             scale.name="log2",
              emptywells=empties,
              hilite=(gene.total>=1000),
              mtext=">=1000 unique txpts",
              failedwells=failed)
 
-  plate.plot(data=log10(complexity+1), main='complexity',
-             ticks=0:4,
-             scale.name="log10",
+  plate.plot(data=log2(complexity+1), main='complexity',
+             ticks=0:14,
+             scale.name="log2",
              emptywells=empties,
              hilite=complexity>=1000,
              mtext=">=1000 unique genes",
              failedwells=failed)
 
-  plate.plot(data=log10(spike.total+1), main='ERCC txpts',
-             ticks=-1:4,
-             scale.name="log10",
+  plate.plot(data=log2(spike.total+1), main='ERCC txpts',
+             ticks=-1:14,
+             scale.name="log2",
              emptywells=empties,
              hilite=spike.total>100,
              mtext=">100 ERCCs",
