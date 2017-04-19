@@ -1,2 +1,3 @@
 # single-cell-sequencing
-scripts and functions to analyse single-cell sequencing data
+scripts and functions to analyse single-cell sequencing data.
+This fork has substantially changed from Mauro's original version. Among the changes are some refactoring (plate.plot now plots exactly one plate), graphs showing the number of unmapped reads (for that, the `*.cout?.csv` files produced by https://github.com/plijnzaad/scseq/blob/master/process_sam_cel384v2.pl have been extended to include the number of unmapped reads per well), and graphs aimed at judging whether additional sequencing is likely to be meaningful (for this, `process_sam_cel384v2.pl` has been extended to output the number of genes and umis 'seen' during traversal of the `.bam` file)
