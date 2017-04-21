@@ -6,6 +6,9 @@ https://github.com/plijnzaad/scseq repository.
 
 This is a fork of https://github.com/MauroJM/single-cell-sequencing by
 Mauro Muraro (van Oudenaarden group, Hubrecht Institute, Utrecht).
+**The current fork will remain frozen here, but is currently developed
+further on our bitbucket
+acccount.** [Contact me](mailto:p.lijnzaad@gmailcom) if you want access.
 
 The script now substantionally deviates from the original. Among the
 changes are some refactoring (plate.plot now plots exactly one plate),
@@ -18,7 +21,4 @@ be meaningful (for this, `process_sam_cel384v2.pl` has been extended to
 output the number of genes and umis 'seen' during traversal of the
 `.bam` file)
 
-The current fork will remain frozen here, but is currently developed
-further on our bitbucket
-acccount. [Contact me](mailto:p.lijnzaad@gmailcom) if you want access.
 
