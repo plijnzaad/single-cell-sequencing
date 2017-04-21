@@ -2,7 +2,7 @@
 
 A script for quality control of a scRNA-Seq run on one or more 384 wells
 plates using the CEL-Seq2 protocol and the scripts found in the
-https://bitbucket.org/princessmaximacenter/scseq repository.
+https://github.com/plijnzaad/scseq repository.
 
 This is a fork of https://github.com/MauroJM/single-cell-sequencing by
 Mauro Muraro (van Oudenaarden group, Hubrecht Institute, Utrecht).
