@@ -6,9 +6,12 @@ https://github.com/plijnzaad/scseq repository.
 
 This is a fork of https://github.com/MauroJM/single-cell-sequencing by
 Mauro Muraro (van Oudenaarden group, Hubrecht Institute, Utrecht).
-**The current fork will remain frozen here, but is currently developed
-further on our bitbucket
-acccount.** [Contact me](mailto:p.lijnzaad@gmailcom) if you want access.
+
+**The current repo will remain frozen here, but is currently developed
+further on [the Princess Maxima Center bitbucket
+acccount](https://bitbucket.org/princessmaximacenter/).** [Contact me](mailto:p.lijnzaad@gmailcom) if you want access.
+
+
 
 The script now substantionally deviates from the original. Among the
 changes are some refactoring (plate.plot now plots exactly one plate),
