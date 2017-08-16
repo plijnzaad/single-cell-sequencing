@@ -4,6 +4,8 @@ A script for quality control of a scRNA-Seq run on one or more 384 wells
 plates using the CEL-Seq2 protocol and the scripts found in the
 https://github.com/plijnzaad/scseq repository.
 
+**This code has moved to https://bitbucket.org/princessmaximacenter/platediagnostics .**
+
 This is a fork of https://github.com/MauroJM/single-cell-sequencing by
 Mauro Muraro (van Oudenaarden group, Hubrecht Institute, Utrecht).
 
